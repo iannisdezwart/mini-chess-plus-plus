@@ -20,10 +20,10 @@
 
 namespace chess {
 	struct Square {
-		uint8_t x;
-		uint8_t y;
+		int8_t x;
+		int8_t y;
 
-		Square(uint8_t x, uint8_t y) : x(x), y(y) {}
+		Square(int8_t x, int8_t y) : x(x), y(y) {}
 	};
 
 	enum class Pieces : uint8_t {
@@ -60,6 +60,40 @@ namespace chess {
 			case Pieces::BLACK_PAWN:   return BLACK_PIECE PAWN;
 			case Pieces::UNOCCUPIED:   return " ";
 			default: return "?";
+		}
+	}
+
+	bool is_white(enum Pieces piece)
+	{
+		switch (piece)
+		{
+			case Pieces::WHITE_KING:
+			case Pieces::WHITE_QUEEN:
+			case Pieces::WHITE_ROOK:
+			case Pieces::WHITE_KNIGHT:
+			case Pieces::WHITE_BISHOP:
+			case Pieces::WHITE_PAWN:
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
+	bool is_black(enum Pieces piece)
+	{
+		switch (piece)
+		{
+			case Pieces::BLACK_KING:
+			case Pieces::BLACK_QUEEN:
+			case Pieces::BLACK_ROOK:
+			case Pieces::BLACK_KNIGHT:
+			case Pieces::BLACK_BISHOP:
+			case Pieces::BLACK_PAWN:
+				return true;
+
+			default:
+				return false;
 		}
 	}
 
@@ -191,6 +225,7 @@ namespace chess {
 						break;
 
 					case Pieces::WHITE_PAWN:
+					{
 						if (squares[y + 1][x] == Pieces::UNOCCUPIED)
 						{
 							moves.push_back(Square(x, y + 1));
@@ -201,19 +236,21 @@ namespace chess {
 							}
 						}
 
-						if (squares[y + 1][x - 1] != Pieces::UNOCCUPIED)
+						if (is_black(squares[y + 1][x - 1]))
 						{
 							moves.push_back(Square(x - 1, y + 1));
 						}
 
-						if (squares[y + 1][x + 1] != Pieces::UNOCCUPIED)
+						if (is_black(squares[y + 1][x + 1]))
 						{
 							moves.push_back(Square(x + 1, y + 1));
 						}
 
 						break;
+					}
 
 					case Pieces::BLACK_PAWN:
+					{
 						if (squares[y - 1][x] == Pieces::UNOCCUPIED)
 						{
 							moves.push_back(Square(x, y - 1));
@@ -224,17 +261,116 @@ namespace chess {
 							}
 						}
 
-						if (squares[y - 1][x - 1] != Pieces::UNOCCUPIED)
+						if (is_white(squares[y - 1][x - 1]))
 						{
 							moves.push_back(Square(x - 1, y - 1));
 						}
 
-						if (squares[y - 1][x + 1] != Pieces::UNOCCUPIED)
+						if (is_white(squares[y - 1][x + 1]))
 						{
 							moves.push_back(Square(x + 1, y - 1));
 						}
 
 						break;
+					}
+
+					case Pieces::WHITE_BISHOP:
+					{
+						Square diag(x + 1, y + 1);
+
+						while (diag.x < 8 && diag.y < 8)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y++;
+						}
+
+						diag = Square(x + 1, y - 1);
+
+						while (diag.x < 8 && diag.y >= 0)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y - 1);
+
+						while (diag.x >= 0 && diag.y >= 0)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y + 1);
+
+						while (diag.x >= 0 && diag.y < 8)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y++;
+						}
+
+						break;
+					}
+
+					case Pieces::BLACK_BISHOP:
+					{
+						Square diag(x + 1, y + 1);
+
+						while (diag.x < 8 && diag.y < 8)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y++;
+						}
+
+						diag = Square(x + 1, y - 1);
+
+						while (diag.x < 8 && diag.y >= 0)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y - 1);
+
+						while (diag.x >= 0 && diag.y >= 0)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y + 1);
+
+						while (diag.x >= 0 && diag.y < 8)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y++;
+						}
+
+						break;
+					}
 				}
 
 				return moves;

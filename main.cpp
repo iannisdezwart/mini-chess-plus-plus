@@ -7,7 +7,7 @@ int main()
 {
 	chess::Board board;
 	chess::Square cursor(3, 3);
-	chess::Square sel((uint8_t) -1, (uint8_t) -1);
+	chess::Square sel(-1, -1);
 	std::vector<chess::Square> moves;
 
 	while (true)
@@ -20,22 +20,22 @@ int main()
 		{
 			case keypress::ARROW_UP:
 				cursor.y++;
-				cursor.y %= 8;
+				if (cursor.y > 7) cursor.y -= 8;
 				break;
 
 			case keypress::ARROW_DOWN:
 				cursor.y--;
-				cursor.y %= 8;
+				if (cursor.y < 0) cursor.y += 8;
 				break;
 
 			case keypress::ARROW_RIGHT:
 				cursor.x++;
-				cursor.x %= 8;
+				if (cursor.x > 7) cursor.x -= 8;
 				break;
 
 			case keypress::ARROW_LEFT:
 				cursor.x--;
-				cursor.x %= 8;
+				if (cursor.x < 0) cursor.x += 8;
 				break;
 
 			case keypress::SPACE:
@@ -47,7 +47,7 @@ int main()
 
 						board.move(chess::Square(sel.x, sel.y), cursor);
 						moves.clear();
-						sel = chess::Square((uint8_t) -1, (uint8_t) -1);
+						sel = chess::Square(-1, -1);
 						goto _break;
 					}
 				}
@@ -60,7 +60,7 @@ int main()
 
 			case keypress::BACKSPACE:
 				moves.clear();
-				sel = chess::Square((uint8_t) -1, (uint8_t) -1);
+				sel = chess::Square(-1, -1);
 				break;
 
 			default:
