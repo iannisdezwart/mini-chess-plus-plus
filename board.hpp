@@ -371,6 +371,96 @@ namespace chess {
 
 						break;
 					}
+
+					case Pieces::WHITE_KNIGHT:
+					{
+						if (x - 1 >= 0 && y - 2 >= 0 && !is_white(squares[y - 2][x - 1]))
+						{
+							moves.push_back(Square(x - 1, y - 2));
+						}
+
+						if (x - 2 >= 0 && y - 1 >= 0 && !is_white(squares[y - 1][x - 2]))
+						{
+							moves.push_back(Square(x - 2, y - 1));
+						}
+
+						if (x + 1 < 8 && y - 2 >= 0 && !is_white(squares[y - 2][x + 1]))
+						{
+							moves.push_back(Square(x + 1, y - 2));
+						}
+
+						if (x + 2 < 8 && y - 1 >= 0 && !is_white(squares[y - 1][x + 2]))
+						{
+							moves.push_back(Square(x + 2, y - 1));
+						}
+
+						if (x - 1 >= 0 && y + 2 < 8 && !is_white(squares[y + 2][x - 1]))
+						{
+							moves.push_back(Square(x - 1, y + 2));
+						}
+
+						if (x - 2 >= 0 && y + 1 < 8 && !is_white(squares[y + 1][x - 2]))
+						{
+							moves.push_back(Square(x - 2, y + 1));
+						}
+
+						if (x + 1 < 8 && y + 2 < 8 && !is_white(squares[y + 2][x + 1]))
+						{
+							moves.push_back(Square(x + 1, y + 2));
+						}
+
+						if (x + 2 < 8 && y + 1 < 8 && !is_white(squares[y + 1][x + 2]))
+						{
+							moves.push_back(Square(x + 2, y + 1));
+						}
+
+						break;
+					}
+
+					case Pieces::BLACK_KNIGHT:
+					{
+						if (x - 1 >= 0 && y - 2 >= 0 && !is_black(squares[y - 2][x - 1]))
+						{
+							moves.push_back(Square(x - 1, y - 2));
+						}
+
+						if (x - 2 >= 0 && y - 1 >= 0 && !is_black(squares[y - 1][x - 2]))
+						{
+							moves.push_back(Square(x - 2, y - 1));
+						}
+
+						if (x + 1 < 8 && y - 2 >= 0 && !is_black(squares[y - 2][x + 1]))
+						{
+							moves.push_back(Square(x + 1, y - 2));
+						}
+
+						if (x + 2 < 8 && y - 1 >= 0 && !is_black(squares[y - 1][x + 2]))
+						{
+							moves.push_back(Square(x + 2, y - 1));
+						}
+
+						if (x - 1 >= 0 && y + 2 < 8 && !is_black(squares[y + 2][x - 1]))
+						{
+							moves.push_back(Square(x - 1, y + 2));
+						}
+
+						if (x - 2 >= 0 && y + 1 < 8 && !is_black(squares[y + 1][x - 2]))
+						{
+							moves.push_back(Square(x - 2, y + 1));
+						}
+
+						if (x + 1 < 8 && y + 2 < 8 && !is_black(squares[y + 2][x + 1]))
+						{
+							moves.push_back(Square(x + 1, y + 2));
+						}
+
+						if (x + 2 < 8 && y + 1 < 8 && !is_black(squares[y + 1][x + 2]))
+						{
+							moves.push_back(Square(x + 2, y + 1));
+						}
+
+						break;
+					}
 				}
 
 				return moves;
