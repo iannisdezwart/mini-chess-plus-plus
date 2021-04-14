@@ -461,6 +461,274 @@ namespace chess {
 
 						break;
 					}
+
+					case Pieces::WHITE_ROOK:
+					{
+						Square line(x + 1, y);
+
+						while (line.x < 8)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.x++;
+						}
+
+						line = Square(x - 1, y);
+
+						while (line.x >= 0)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.x--;
+						}
+
+						line = Square(x, y + 1);
+
+						while (line.y < 8)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.y++;
+						}
+
+						line = Square(x, y - 1);
+
+						while (line.y >= 0)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.y--;
+						}
+
+						break;
+					}
+
+					case Pieces::BLACK_ROOK:
+					{
+						Square line(x + 1, y);
+
+						while (line.x < 8)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.x++;
+						}
+
+						line = Square(x - 1, y);
+
+						while (line.x >= 0)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.x--;
+						}
+
+						line = Square(x, y + 1);
+
+						while (line.y < 8)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.y++;
+						}
+
+						line = Square(x, y - 1);
+
+						while (line.y >= 0)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.y--;
+						}
+
+						break;
+					}
+
+					case Pieces::WHITE_QUEEN:
+					{
+						Square diag(x + 1, y + 1);
+
+						while (diag.x < 8 && diag.y < 8)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y++;
+						}
+
+						diag = Square(x + 1, y - 1);
+
+						while (diag.x < 8 && diag.y >= 0)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y - 1);
+
+						while (diag.x >= 0 && diag.y >= 0)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y + 1);
+
+						while (diag.x >= 0 && diag.y < 8)
+						{
+							if (is_white(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_black(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y++;
+						}
+
+						Square line(x + 1, y);
+
+						while (line.x < 8)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.x++;
+						}
+
+						line = Square(x - 1, y);
+
+						while (line.x >= 0)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.x--;
+						}
+
+						line = Square(x, y + 1);
+
+						while (line.y < 8)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.y++;
+						}
+
+						line = Square(x, y - 1);
+
+						while (line.y >= 0)
+						{
+							if (is_white(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_black(squares[line.y][line.x])) break;
+							line.y--;
+						}
+
+						break;
+					}
+
+					case Pieces::BLACK_QUEEN:
+					{
+						Square diag(x + 1, y + 1);
+
+						while (diag.x < 8 && diag.y < 8)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y++;
+						}
+
+						diag = Square(x + 1, y - 1);
+
+						while (diag.x < 8 && diag.y >= 0)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x++;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y - 1);
+
+						while (diag.x >= 0 && diag.y >= 0)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y--;
+						}
+
+						diag = Square(x - 1, y + 1);
+
+						while (diag.x >= 0 && diag.y < 8)
+						{
+							if (is_black(squares[diag.y][diag.x])) break;
+							moves.push_back(diag);
+							if (is_white(squares[diag.y][diag.x])) break;
+							diag.x--;
+							diag.y++;
+						}
+
+						Square line(x + 1, y);
+
+						while (line.x < 8)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.x++;
+						}
+
+						line = Square(x - 1, y);
+
+						while (line.x >= 0)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.x--;
+						}
+
+						line = Square(x, y + 1);
+
+						while (line.y < 8)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.y++;
+						}
+
+						line = Square(x, y - 1);
+
+						while (line.y >= 0)
+						{
+							if (is_black(squares[line.y][line.x])) break;
+							moves.push_back(line);
+							if (is_white(squares[line.y][line.x])) break;
+							line.y--;
+						}
+
+						break;
+					}
 				}
 
 				return moves;
