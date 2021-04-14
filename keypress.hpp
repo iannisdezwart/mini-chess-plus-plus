@@ -7,7 +7,8 @@
 
 #include "debug.hpp"
 
-namespace keypress {
+namespace keypress
+{
 	int getch()
 	{
 		struct termios oldattr;
@@ -27,7 +28,8 @@ namespace keypress {
 		return ch;
 	}
 
-	enum SpecialKeys : uint8_t {
+	enum SpecialKeys : uint8_t
+	{
 		TAB = 9,
 		ENTER = 10,
 		DELETE = 21,

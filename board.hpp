@@ -18,15 +18,18 @@
 #define BISHOP "♝"
 #define PAWN "♟︎"
 
-namespace chess {
-	struct Square {
+namespace chess
+{
+	struct Square
+	{
 		int8_t x;
 		int8_t y;
 
 		Square(int8_t x, int8_t y) : x(x), y(y) {}
 	};
 
-	enum class Pieces : uint8_t {
+	enum class Pieces : uint8_t
+	{
 		WHITE_KING,
 		WHITE_QUEEN,
 		WHITE_ROOK,
@@ -40,6 +43,12 @@ namespace chess {
 		BLACK_BISHOP,
 		BLACK_PAWN,
 		UNOCCUPIED
+	};
+
+	enum class Players : uint8_t
+	{
+		WHITE,
+		BLACK
 	};
 
 	const char *piece_to_str(enum Pieces piece)
@@ -101,7 +110,9 @@ namespace chess {
 		public:
 			enum Pieces squares[8][8];
 
-			Board()
+			enum Players turn;
+
+			Board() : turn(Players::WHITE)
 			{
 				squares[0][0] = Pieces::WHITE_ROOK;
 				squares[0][1] = Pieces::WHITE_KNIGHT;
@@ -218,6 +229,8 @@ namespace chess {
 				if (x >= 8 || y >= 8) return moves;
 
 				enum Pieces piece = squares[y][x];
+
+				// Todo: implement en-passant & castling
 
 				switch (piece)
 				{
@@ -869,6 +882,9 @@ namespace chess {
 				enum Pieces moved_piece = squares[from.y][from.x];
 				squares[from.y][from.x] = Pieces::UNOCCUPIED;
 				squares[to.y][to.x] = moved_piece;
+
+				if (turn == Players::WHITE) turn = Players::BLACK;
+				else turn = Players::WHITE;
 			}
 	};
 };

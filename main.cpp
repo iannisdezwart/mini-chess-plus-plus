@@ -55,7 +55,19 @@ int main()
 				// Select this square
 
 				sel = chess::Square(cursor.x, cursor.y);
-				moves = board.possible_moves(cursor.x, cursor.y);
+
+				if (board.turn == chess::Players::WHITE
+					&& chess::is_white(board.squares[sel.y][sel.x])
+					|| board.turn == chess::Players::BLACK
+					&& chess::is_black(board.squares[sel.y][sel.x]))
+				{
+					moves = board.possible_moves(cursor.x, cursor.y);
+				}
+				else
+				{
+					moves.clear();
+				}
+
 				_break: break;
 
 			case keypress::BACKSPACE:
