@@ -729,6 +729,136 @@ namespace chess {
 
 						break;
 					}
+
+					case Pieces::WHITE_KING:
+					{
+						Square diag(x + 1, y + 1);
+
+						if (diag.x < 8 && diag.y < 8
+							&& !is_white(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						diag = Square(x - 1, y + 1);
+
+						if (diag.x >= 0 && diag.y < 8
+							&& !is_white(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						diag = Square(x - 1, y - 1);
+
+						if (diag.x >= 0 && diag.y >= 0
+							&& !is_white(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						diag = Square(x + 1, y - 1);
+
+						if (diag.x < 8 && diag.y >= 0
+							&& !is_white(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						Square line(x + 1, y);
+
+						if (line.x < 8 && !is_white(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						line = Square(x - 1, y);
+
+						if (line.x >= 0 && !is_white(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						line = Square(x, y + 1);
+
+						if (line.y < 8 && !is_white(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						line = Square(x, y - 1);
+
+						if (line.y >= 0 && !is_white(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						break;
+					}
+
+					case Pieces::BLACK_KING:
+					{
+						Square diag(x + 1, y + 1);
+
+						if (diag.x < 8 && diag.y < 8
+							&& !is_black(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						diag = Square(x - 1, y + 1);
+
+						if (diag.x >= 0 && diag.y < 8
+							&& !is_black(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						diag = Square(x - 1, y - 1);
+
+						if (diag.x >= 0 && diag.y >= 0
+							&& !is_black(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						diag = Square(x + 1, y - 1);
+
+						if (diag.x < 8 && diag.y >= 0
+							&& !is_black(squares[diag.y][diag.x]))
+						{
+							moves.push_back(diag);
+						}
+
+						Square line(x + 1, y);
+
+						if (line.x < 8 && !is_black(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						line = Square(x - 1, y);
+
+						if (line.x >= 0 && !is_black(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						line = Square(x, y + 1);
+
+						if (line.y < 8 && !is_black(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						line = Square(x, y - 1);
+
+						if (line.y >= 0 && !is_black(squares[line.y][line.x]))
+						{
+							moves.push_back(line);
+						}
+
+						break;
+					}
 				}
 
 				return moves;
