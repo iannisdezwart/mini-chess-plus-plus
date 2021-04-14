@@ -187,24 +187,51 @@ namespace chess {
 
 				switch (piece)
 				{
-					case Pieces::UNOCCUPIED: return moves;
+					case Pieces::UNOCCUPIED:
+						break;
 
 					case Pieces::WHITE_PAWN:
-						moves.push_back(Square(x, y + 1));
-
-						if (y == 1)
+						if (squares[y + 1][x] == Pieces::UNOCCUPIED)
 						{
-							moves.push_back(Square(x, y + 2));
+							moves.push_back(Square(x, y + 1));
+
+							if (y == 1 && squares[y + 2][x] == Pieces::UNOCCUPIED)
+							{
+								moves.push_back(Square(x, y + 2));
+							}
+						}
+
+						if (squares[y + 1][x - 1] != Pieces::UNOCCUPIED)
+						{
+							moves.push_back(Square(x - 1, y + 1));
+						}
+
+						if (squares[y + 1][x + 1] != Pieces::UNOCCUPIED)
+						{
+							moves.push_back(Square(x + 1, y + 1));
 						}
 
 						break;
 
 					case Pieces::BLACK_PAWN:
-						moves.push_back(Square(x, y - 1));
-
-						if (y == 6)
+						if (squares[y - 1][x] == Pieces::UNOCCUPIED)
 						{
-							moves.push_back(Square(x, y - 2));
+							moves.push_back(Square(x, y - 1));
+
+							if (y == 6 && squares[y - 2][x] == Pieces::UNOCCUPIED)
+							{
+								moves.push_back(Square(x, y - 2));
+							}
+						}
+
+						if (squares[y - 1][x - 1] != Pieces::UNOCCUPIED)
+						{
+							moves.push_back(Square(x - 1, y - 1));
+						}
+
+						if (squares[y - 1][x + 1] != Pieces::UNOCCUPIED)
+						{
+							moves.push_back(Square(x + 1, y - 1));
 						}
 
 						break;
