@@ -12,6 +12,7 @@ int main()
 	chess::Square sel(-1, -1);
 	std::vector<chess::Square> moves;
 	std::vector<chess::Square> warn;
+	bool new_move = true;
 
 	while (true)
 	{
@@ -19,22 +20,52 @@ int main()
 
 		warn.clear();
 
-		bool white_in_check = false;
-		bool black_in_check = false;
-
-		if (board.white_in_check())
+		if (new_move)
 		{
-			white_in_check = true;
-			warn.push_back(board.white_king);
-		}
+			if (board.white_in_check())
+			{
+				warn.push_back(board.white_king);
+			}
 
-		if (board.black_in_check())
-		{
-			black_in_check = true;
-			warn.push_back(board.black_king);
+			if (board.black_in_check())
+			{
+				warn.push_back(board.black_king);
+			}
 		}
 
 		board.print(cursor, sel, moves, warn);
+
+		if (new_move)
+		{
+			if (board.turn == chess::Players::WHITE && !board.white_can_move())
+			{
+				if (board.white_in_check())
+				{
+					printf("Black won because white is in checkmate\n");
+					exit(0);
+				}
+				else
+				{
+					printf("Tie because white is in stalemate\n");
+					exit(0);
+				}
+			}
+
+			if (board.turn == chess::Players::BLACK && !board.black_can_move())
+			{
+				if (board.black_in_check())
+				{
+					printf("White won because black is in checkmate\n");
+					exit(0);
+				}
+				else
+				{
+					printf("Tie because black is in stalemate\n");
+					exit(0);
+				}
+			}
+		}
+
 		uint8_t key = keypress::get_key();
 
 		switch (key)
@@ -69,7 +100,8 @@ int main()
 						board.move(chess::Square(sel.x, sel.y), cursor);
 						moves.clear();
 						sel = chess::Square(-1, -1);
-						goto _break;
+						new_move = true;
+						goto break_new_move;
 					}
 				}
 
@@ -83,8 +115,7 @@ int main()
 					&& chess::is_black(board.squares[sel.y][sel.x]))
 				{
 					bool in_check = board.turn == chess::Players::WHITE
-						? white_in_check : black_in_check;
-
+						? board.white_in_check() : board.black_in_check();
 					moves = board.possible_moves(cursor.x, cursor.y, true, in_check);
 				}
 				else
@@ -92,7 +123,7 @@ int main()
 					moves.clear();
 				}
 
-				_break: break;
+				break;
 
 			case keypress::BACKSPACE:
 				moves.clear();
@@ -102,5 +133,8 @@ int main()
 			default:
 				continue;
 		}
+
+		new_move = false;
+		break_new_move:;
 	}
 }

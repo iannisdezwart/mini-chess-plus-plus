@@ -313,6 +313,40 @@ namespace chess
 				return false;
 			}
 
+			bool white_can_move()
+			{
+				for (uint8_t row = 0; row < 8; row++)
+				{
+					for (uint8_t col = 0; col < 8; col++)
+					{
+						if (is_white(squares[row][col]))
+						{
+							std::vector<Square> moves = possible_moves(col, row, true, true);
+							if (moves.size()) return true;
+						}
+					}
+				}
+
+				return false;
+			}
+
+			bool black_can_move()
+			{
+				for (uint8_t row = 0; row < 8; row++)
+				{
+					for (uint8_t col = 0; col < 8; col++)
+					{
+						if (is_black(squares[row][col]))
+						{
+							std::vector<Square> moves = possible_moves(col, row, true, true);
+							if (moves.size()) return true;
+						}
+					}
+				}
+
+				return false;
+			}
+
 			std::vector<Square> possible_moves(uint8_t x, uint8_t y,
 				bool check_check, bool in_check = false)
 			{
