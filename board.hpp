@@ -109,8 +109,15 @@ namespace chess
 	class Board {
 		public:
 			enum Pieces squares[8][8];
-
 			enum Players turn;
+
+			bool white_king_moved = false;
+			bool white_left_rook_moved = false;
+			bool white_right_rook_moved = false;
+
+			bool black_king_moved = false;
+			bool black_left_rook_moved = false;
+			bool black_right_rook_moved = false;
 
 			Board() : turn(Players::WHITE)
 			{
@@ -805,6 +812,25 @@ namespace chess
 							moves.push_back(line);
 						}
 
+						// Castling
+
+						if (!white_king_moved && !white_right_rook_moved
+							&& squares[y][x + 1] == Pieces::UNOCCUPIED
+							&& squares[y][x + 2] == Pieces::UNOCCUPIED)
+							// Todo: add not out/through/in chess check
+						{
+							moves.push_back(Square(x + 2, y));
+						}
+
+						if (!white_king_moved && !white_left_rook_moved
+							&& squares[y][x - 1] == Pieces::UNOCCUPIED
+							&& squares[y][x - 2] == Pieces::UNOCCUPIED
+							&& squares[y][x - 3] == Pieces::UNOCCUPIED)
+							// Todo: add not out/through/in chess check
+						{
+							moves.push_back(Square(x - 2, y));
+						}
+
 						break;
 					}
 
@@ -870,6 +896,25 @@ namespace chess
 							moves.push_back(line);
 						}
 
+						// Castling
+
+						if (!black_king_moved && !black_right_rook_moved
+							&& squares[y][x + 1] == Pieces::UNOCCUPIED
+							&& squares[y][x + 2] == Pieces::UNOCCUPIED)
+							// Todo: add not out/through/in chess check
+						{
+							moves.push_back(Square(x + 2, y));
+						}
+
+						if (!black_king_moved && !black_left_rook_moved
+							&& squares[y][x - 1] == Pieces::UNOCCUPIED
+							&& squares[y][x - 2] == Pieces::UNOCCUPIED
+							&& squares[y][x - 3] == Pieces::UNOCCUPIED)
+							// Todo: add not out/through/in chess check
+						{
+							moves.push_back(Square(x - 2, y));
+						}
+
 						break;
 					}
 				}
@@ -882,6 +927,68 @@ namespace chess
 				enum Pieces moved_piece = squares[from.y][from.x];
 				squares[from.y][from.x] = Pieces::UNOCCUPIED;
 				squares[to.y][to.x] = moved_piece;
+
+				// Castling
+
+				if (moved_piece == Pieces::WHITE_KING && to.x - from.x == 2)
+				{
+					squares[from.y][from.x + 1] = Pieces::WHITE_ROOK;
+					squares[from.y][from.x + 3] = Pieces::UNOCCUPIED;
+				}
+
+				if (moved_piece == Pieces::WHITE_KING && from.x - to.x == 2)
+				{
+					squares[from.y][from.x - 1] = Pieces::WHITE_ROOK;
+					squares[from.y][from.x - 4] = Pieces::UNOCCUPIED;
+				}
+
+				if (moved_piece == Pieces::BLACK_KING && to.x - from.x == 2)
+				{
+					squares[from.y][from.x + 1] = Pieces::BLACK_ROOK;
+					squares[from.y][from.x + 3] = Pieces::UNOCCUPIED;
+				}
+
+				if (moved_piece == Pieces::BLACK_KING && from.x - to.x == 2)
+				{
+					squares[from.y][from.x - 1] = Pieces::BLACK_ROOK;
+					squares[from.y][from.x - 4] = Pieces::UNOCCUPIED;
+				}
+
+				// Keep track of castling legality
+
+				if (moved_piece == Pieces::WHITE_KING)
+				{
+					white_king_moved = true;
+				}
+
+				if (!white_right_rook_moved && moved_piece == Pieces::WHITE_ROOK
+					&& from.x == 7)
+				{
+					white_right_rook_moved = true;
+				}
+
+				if (!white_left_rook_moved && moved_piece == Pieces::WHITE_ROOK
+					&& from.x == 0)
+				{
+					white_left_rook_moved = true;
+				}
+
+				if (moved_piece == Pieces::BLACK_KING)
+				{
+					black_king_moved = true;
+				}
+
+				if (!black_right_rook_moved && moved_piece == Pieces::BLACK_ROOK
+					&& from.x == 7)
+				{
+					black_right_rook_moved = true;
+				}
+
+				if (!black_left_rook_moved && moved_piece == Pieces::BLACK_ROOK
+					&& from.x == 0)
+				{
+					black_left_rook_moved = true;
+				}
 
 				if (turn == Players::WHITE) turn = Players::BLACK;
 				else turn = Players::WHITE;
