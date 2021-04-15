@@ -271,7 +271,7 @@ namespace chess
 					{
 						if (is_black(squares[row][col]))
 						{
-							std::vector<Square> moves = possible_moves(col, row);
+							std::vector<Square> moves = possible_moves(col, row, false);
 
 							for (const Square& move : moves)
 							{
@@ -296,7 +296,7 @@ namespace chess
 					{
 						if (is_white(squares[row][col]))
 						{
-							std::vector<Square> moves = possible_moves(col, row);
+							std::vector<Square> moves = possible_moves(col, row, false);
 
 							for (const Square& move : moves)
 							{
@@ -313,7 +313,8 @@ namespace chess
 				return false;
 			}
 
-			std::vector<Square> possible_moves(uint8_t x, uint8_t y)
+			std::vector<Square> possible_moves(uint8_t x, uint8_t y,
+				bool check_check, bool in_check = false)
 			{
 				std::vector<Square> moves;
 				if (x >= 8 || y >= 8) return moves;
@@ -331,22 +332,34 @@ namespace chess
 					{
 						if (squares[y + 1][x] == Pieces::UNOCCUPIED)
 						{
-							moves.push_back(Square(x, y + 1));
+							if (!in_check || cancels_check(x, y, x, y + 1))
+							{
+								moves.push_back(Square(x, y + 1));
+							}
 
 							if (y == 1 && squares[y + 2][x] == Pieces::UNOCCUPIED)
 							{
-								moves.push_back(Square(x, y + 2));
+								if (!in_check || cancels_check(x, y, x, y + 2))
+								{
+									moves.push_back(Square(x, y + 2));
+								}
 							}
 						}
 
 						if (is_black(squares[y + 1][x - 1]))
 						{
-							moves.push_back(Square(x - 1, y + 1));
+							if (!in_check || cancels_check(x, y, x - 1, y + 1))
+							{
+								moves.push_back(Square(x - 1, y + 1));
+							}
 						}
 
 						if (is_black(squares[y + 1][x + 1]))
 						{
-							moves.push_back(Square(x + 1, y + 1));
+							if (!in_check || cancels_check(x, y, x + 1, y + 1))
+							{
+								moves.push_back(Square(x + 1, y + 1));
+							}
 						}
 
 						// En passant
@@ -354,13 +367,19 @@ namespace chess
 						if (squares[y][x - 1] == Pieces::BLACK_PAWN
 							&& black_en_passant_flags & (x - 1))
 						{
-							moves.push_back(Square(x - 1, y + 1));
+							if (!in_check || cancels_check(x, y, x - 1, y + 1))
+							{
+								moves.push_back(Square(x - 1, y + 1));
+							}
 						}
 
 						if (squares[y][x + 1] == Pieces::BLACK_PAWN
 							&& black_en_passant_flags & (x + 1))
 						{
-							moves.push_back(Square(x + 1, y + 1));
+							if (!in_check || cancels_check(x, y, x + 1, y + 1))
+							{
+								moves.push_back(Square(x + 1, y + 1));
+							}
 						}
 
 						break;
@@ -370,22 +389,34 @@ namespace chess
 					{
 						if (squares[y - 1][x] == Pieces::UNOCCUPIED)
 						{
-							moves.push_back(Square(x, y - 1));
+							if (!in_check || cancels_check(x, y, x, y - 1))
+							{
+								moves.push_back(Square(x, y - 1));
+							}
 
 							if (y == 6 && squares[y - 2][x] == Pieces::UNOCCUPIED)
 							{
-								moves.push_back(Square(x, y - 2));
+								if (!in_check || cancels_check(x, y, x, y - 2))
+								{
+									moves.push_back(Square(x, y - 2));
+								}
 							}
 						}
 
 						if (is_white(squares[y - 1][x - 1]))
 						{
-							moves.push_back(Square(x - 1, y - 1));
+							if (!in_check || cancels_check(x, y, x - 1, y - 1))
+							{
+								moves.push_back(Square(x - 1, y - 1));
+							}
 						}
 
 						if (is_white(squares[y - 1][x + 1]))
 						{
-							moves.push_back(Square(x + 1, y - 1));
+							if (!in_check || cancels_check(x, y, x + 1, y - 1))
+							{
+								moves.push_back(Square(x + 1, y - 1));
+							}
 						}
 
 						// En passant
@@ -393,13 +424,19 @@ namespace chess
 						if (squares[y][x - 1] == Pieces::WHITE_PAWN
 							&& white_en_passant_flags & (x - 1))
 						{
-							moves.push_back(Square(x - 1, y - 1));
+							if (!in_check || cancels_check(x, y, x - 1, y - 1))
+							{
+								moves.push_back(Square(x - 1, y - 1));
+							}
 						}
 
 						if (squares[y][x + 1] == Pieces::WHITE_PAWN
 							&& white_en_passant_flags & (x + 1))
 						{
-							moves.push_back(Square(x + 1, y - 1));
+							if (!in_check || cancels_check(x, y, x + 1, y - 1))
+							{
+								moves.push_back(Square(x + 1, y - 1));
+							}
 						}
 
 						break;
@@ -412,7 +449,10 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y++;
@@ -423,7 +463,10 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y--;
@@ -434,7 +477,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y--;
@@ -445,7 +491,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y++;
@@ -461,7 +510,10 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y++;
@@ -472,7 +524,10 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y--;
@@ -483,7 +538,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y--;
@@ -494,7 +552,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y++;
@@ -507,42 +568,66 @@ namespace chess
 					{
 						if (x - 1 >= 0 && y - 2 >= 0 && !is_white(squares[y - 2][x - 1]))
 						{
-							moves.push_back(Square(x - 1, y - 2));
+							if (!in_check || cancels_check(x, y, x - 1, y - 2))
+							{
+								moves.push_back(Square(x - 1, y - 2));
+							}
 						}
 
 						if (x - 2 >= 0 && y - 1 >= 0 && !is_white(squares[y - 1][x - 2]))
 						{
-							moves.push_back(Square(x - 2, y - 1));
+							if (!in_check || cancels_check(x, y, x - 2, y - 1))
+							{
+								moves.push_back(Square(x - 2, y - 1));
+							}
 						}
 
 						if (x + 1 < 8 && y - 2 >= 0 && !is_white(squares[y - 2][x + 1]))
 						{
-							moves.push_back(Square(x + 1, y - 2));
+							if (!in_check || cancels_check(x, y, x + 1, y - 2))
+							{
+								moves.push_back(Square(x + 1, y - 2));
+							}
 						}
 
 						if (x + 2 < 8 && y - 1 >= 0 && !is_white(squares[y - 1][x + 2]))
 						{
-							moves.push_back(Square(x + 2, y - 1));
+							if (!in_check || cancels_check(x, y, x + 2, y - 1))
+							{
+								moves.push_back(Square(x + 2, y - 1));
+							}
 						}
 
 						if (x - 1 >= 0 && y + 2 < 8 && !is_white(squares[y + 2][x - 1]))
 						{
-							moves.push_back(Square(x - 1, y + 2));
+							if (!in_check || cancels_check(x, y, x - 1, y + 2))
+							{
+								moves.push_back(Square(x - 1, y + 2));
+							}
 						}
 
 						if (x - 2 >= 0 && y + 1 < 8 && !is_white(squares[y + 1][x - 2]))
 						{
-							moves.push_back(Square(x - 2, y + 1));
+							if (!in_check || cancels_check(x, y, x - 2, y + 1))
+							{
+								moves.push_back(Square(x - 2, y + 1));
+							}
 						}
 
 						if (x + 1 < 8 && y + 2 < 8 && !is_white(squares[y + 2][x + 1]))
 						{
-							moves.push_back(Square(x + 1, y + 2));
+							if (!in_check || cancels_check(x, y, x + 1, y + 2))
+							{
+								moves.push_back(Square(x + 1, y + 2));
+							}
 						}
 
 						if (x + 2 < 8 && y + 1 < 8 && !is_white(squares[y + 1][x + 2]))
 						{
-							moves.push_back(Square(x + 2, y + 1));
+							if (!in_check || cancels_check(x, y, x + 2, y + 1))
+							{
+								moves.push_back(Square(x + 2, y + 1));
+							}
 						}
 
 						break;
@@ -552,42 +637,66 @@ namespace chess
 					{
 						if (x - 1 >= 0 && y - 2 >= 0 && !is_black(squares[y - 2][x - 1]))
 						{
-							moves.push_back(Square(x - 1, y - 2));
+							if (!in_check || cancels_check(x, y, x - 1, y - 2))
+							{
+								moves.push_back(Square(x - 1, y - 2));
+							}
 						}
 
 						if (x - 2 >= 0 && y - 1 >= 0 && !is_black(squares[y - 1][x - 2]))
 						{
-							moves.push_back(Square(x - 2, y - 1));
+							if (!in_check || cancels_check(x, y, x - 2, y - 1))
+							{
+								moves.push_back(Square(x - 2, y - 1));
+							}
 						}
 
 						if (x + 1 < 8 && y - 2 >= 0 && !is_black(squares[y - 2][x + 1]))
 						{
-							moves.push_back(Square(x + 1, y - 2));
+							if (!in_check || cancels_check(x, y, x + 1, y - 2))
+							{
+								moves.push_back(Square(x + 1, y - 2));
+							}
 						}
 
 						if (x + 2 < 8 && y - 1 >= 0 && !is_black(squares[y - 1][x + 2]))
 						{
-							moves.push_back(Square(x + 2, y - 1));
+							if (!in_check || cancels_check(x, y, x + 2, y - 1))
+							{
+								moves.push_back(Square(x + 2, y - 1));
+							}
 						}
 
 						if (x - 1 >= 0 && y + 2 < 8 && !is_black(squares[y + 2][x - 1]))
 						{
-							moves.push_back(Square(x - 1, y + 2));
+							if (!in_check || cancels_check(x, y, x - 1, y + 2))
+							{
+								moves.push_back(Square(x - 1, y + 2));
+							}
 						}
 
 						if (x - 2 >= 0 && y + 1 < 8 && !is_black(squares[y + 1][x - 2]))
 						{
-							moves.push_back(Square(x - 2, y + 1));
+							if (!in_check || cancels_check(x, y, x - 2, y + 1))
+							{
+								moves.push_back(Square(x - 2, y + 1));
+							}
 						}
 
 						if (x + 1 < 8 && y + 2 < 8 && !is_black(squares[y + 2][x + 1]))
 						{
-							moves.push_back(Square(x + 1, y + 2));
+							if (!in_check || cancels_check(x, y, x + 1, y + 2))
+							{
+								moves.push_back(Square(x + 1, y + 2));
+							}
 						}
 
 						if (x + 2 < 8 && y + 1 < 8 && !is_black(squares[y + 1][x + 2]))
 						{
-							moves.push_back(Square(x + 2, y + 1));
+							if (!in_check || cancels_check(x, y, x + 2, y + 1))
+							{
+								moves.push_back(Square(x + 2, y + 1));
+							}
 						}
 
 						break;
@@ -600,7 +709,10 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.x++;
 						}
@@ -610,7 +722,10 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.x--;
 						}
@@ -620,7 +735,10 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.y++;
 						}
@@ -630,7 +748,10 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.y--;
 						}
@@ -645,7 +766,10 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.x++;
 						}
@@ -655,7 +779,10 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.x--;
 						}
@@ -665,7 +792,10 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.y++;
 						}
@@ -675,7 +805,10 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.y--;
 						}
@@ -690,7 +823,10 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y++;
@@ -701,7 +837,10 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y--;
@@ -712,7 +851,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y--;
@@ -723,7 +865,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_black(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y++;
@@ -734,7 +879,10 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.x++;
 						}
@@ -744,7 +892,10 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.x--;
 						}
@@ -754,7 +905,10 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.y++;
 						}
@@ -764,7 +918,10 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_black(squares[line.y][line.x])) break;
 							line.y--;
 						}
@@ -779,7 +936,10 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y++;
@@ -790,7 +950,10 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x++;
 							diag.y--;
@@ -801,7 +964,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y--;
@@ -812,7 +978,10 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							moves.push_back(diag);
+							if (!in_check || cancels_check(x, y, diag.x, diag.y))
+							{
+								moves.push_back(diag);
+							}
 							if (is_white(squares[diag.y][diag.x])) break;
 							diag.x--;
 							diag.y++;
@@ -823,7 +992,10 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.x++;
 						}
@@ -833,7 +1005,10 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.x--;
 						}
@@ -843,7 +1018,10 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.y++;
 						}
@@ -853,7 +1031,10 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							moves.push_back(line);
+							if (!in_check || cancels_check(x, y, line.x, line.y))
+							{
+								moves.push_back(line);
+							}
 							if (is_white(squares[line.y][line.x])) break;
 							line.y--;
 						}
@@ -863,12 +1044,22 @@ namespace chess
 
 					case Pieces::WHITE_KING:
 					{
+						Square orig(x, y);
 						Square diag(x + 1, y + 1);
 
 						if (diag.x < 8 && diag.y < 8
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!white_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						diag = Square(x - 1, y + 1);
@@ -876,7 +1067,16 @@ namespace chess
 						if (diag.x >= 0 && diag.y < 8
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!white_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						diag = Square(x - 1, y - 1);
@@ -884,7 +1084,16 @@ namespace chess
 						if (diag.x >= 0 && diag.y >= 0
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!white_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						diag = Square(x + 1, y - 1);
@@ -892,35 +1101,80 @@ namespace chess
 						if (diag.x < 8 && diag.y >= 0
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!white_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						Square line(x + 1, y);
 
 						if (line.x < 8 && !is_white(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!white_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						line = Square(x - 1, y);
 
 						if (line.x >= 0 && !is_white(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!white_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						line = Square(x, y + 1);
 
 						if (line.y < 8 && !is_white(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!white_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						line = Square(x, y - 1);
 
 						if (line.y >= 0 && !is_white(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!white_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						// Castling
@@ -947,12 +1201,22 @@ namespace chess
 
 					case Pieces::BLACK_KING:
 					{
+						Square orig(x, y);
 						Square diag(x + 1, y + 1);
 
 						if (diag.x < 8 && diag.y < 8
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!black_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						diag = Square(x - 1, y + 1);
@@ -960,7 +1224,16 @@ namespace chess
 						if (diag.x >= 0 && diag.y < 8
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!black_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						diag = Square(x - 1, y - 1);
@@ -968,7 +1241,16 @@ namespace chess
 						if (diag.x >= 0 && diag.y >= 0
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!black_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						diag = Square(x + 1, y - 1);
@@ -976,35 +1258,80 @@ namespace chess
 						if (diag.x < 8 && diag.y >= 0
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							moves.push_back(diag);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, diag);
+								if (!black_in_check()) moves.push_back(diag);
+								unpretend(orig, diag, old_piece);
+							}
+							else
+							{
+								moves.push_back(diag);
+							}
 						}
 
 						Square line(x + 1, y);
 
 						if (line.x < 8 && !is_black(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!black_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						line = Square(x - 1, y);
 
 						if (line.x >= 0 && !is_black(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!black_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						line = Square(x, y + 1);
 
 						if (line.y < 8 && !is_black(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!black_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						line = Square(x, y - 1);
 
 						if (line.y >= 0 && !is_black(squares[line.y][line.x]))
 						{
-							moves.push_back(line);
+							if (check_check)
+							{
+								enum Pieces old_piece = pretend(orig, line);
+								if (!black_in_check()) moves.push_back(line);
+								unpretend(orig, line, old_piece);
+							}
+							else
+							{
+								moves.push_back(line);
+							}
 						}
 
 						// Castling
@@ -1031,6 +1358,45 @@ namespace chess
 				}
 
 				return moves;
+			}
+
+			enum Pieces pretend(Square from, Square to)
+			{
+				enum Pieces old_piece = squares[to.y][to.x];
+				enum Pieces moved_piece = squares[from.y][from.x];
+				squares[from.y][from.x] = Pieces::UNOCCUPIED;
+				squares[to.y][to.x] = moved_piece;
+				return old_piece;
+			}
+
+			void unpretend(Square from, Square to, enum Pieces old_piece)
+			{
+				squares[from.y][from.x] = squares[to.y][to.x];
+				squares[to.y][to.x] = old_piece;
+			}
+
+			bool cancels_check(uint8_t x_from, uint8_t y_from,
+				uint8_t x_to, uint8_t y_to)
+			{
+				Square from(x_from, y_from);
+				Square to(x_to, y_to);
+
+				enum Pieces old_piece = pretend(from, to);
+
+				bool check;
+
+				if (turn == Players::WHITE)
+				{
+					check = white_in_check();
+				}
+				else
+				{
+					check = black_in_check();
+				}
+
+				unpretend(from, to, old_piece);
+
+				return !check;
 			}
 
 			void move(Square from, Square to)

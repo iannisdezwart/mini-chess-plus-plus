@@ -19,13 +19,18 @@ int main()
 
 		warn.clear();
 
+		bool white_in_check = false;
+		bool black_in_check = false;
+
 		if (board.white_in_check())
 		{
+			white_in_check = true;
 			warn.push_back(board.white_king);
 		}
 
 		if (board.black_in_check())
 		{
+			black_in_check = true;
 			warn.push_back(board.black_king);
 		}
 
@@ -77,7 +82,10 @@ int main()
 					|| board.turn == chess::Players::BLACK
 					&& chess::is_black(board.squares[sel.y][sel.x]))
 				{
-					moves = board.possible_moves(cursor.x, cursor.y);
+					bool in_check = board.turn == chess::Players::WHITE
+						? white_in_check : black_in_check;
+
+					moves = board.possible_moves(cursor.x, cursor.y, true, in_check);
 				}
 				else
 				{
