@@ -7,6 +7,8 @@
 
 #include "debug.hpp"
 
+// Todo: port this to mac os and windows
+
 namespace keypress
 {
 	int getch()

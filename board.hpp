@@ -263,6 +263,81 @@ namespace chess
 				printf("\n");
 			}
 
+			void print_upsd(Square cursor, Square sel = { 8, 8 },
+				std::vector<Square> highl = std::vector<Square>(),
+				std::vector<Square> warn = std::vector<Square>())
+			{
+				for (uint8_t row = 1; row <= 8; row++)
+				{
+					printf("%hhu  ", row);
+
+					for (int8_t col = 7; col >= 0; col--)
+					{
+						if (row % 2 == 0 && col % 2 == 0 || row % 2 && col % 2)
+						{
+							printf(WHITE_SQUARE);
+						}
+						else
+						{
+							printf(BLACK_SQUARE);
+						}
+
+						// Selected square
+
+						if (sel.x == col && sel.y == row - 1)
+						{
+							printf(SEL_SQUARE);
+						}
+
+						// Warn square
+
+						for (size_t i = 0; i < warn.size(); i++)
+						{
+							if (warn[i].x == col && warn[i].y == row - 1)
+							{
+								printf(WARN_SQUARE);
+							}
+						}
+
+						// Cursor square
+
+						if (cursor.x == col && cursor.y == row - 1)
+						{
+							printf(CURSOR_SQUARE);
+						}
+
+						// Print the piece
+
+						printf("%s", piece_to_str(squares[row - 1][col]));
+
+						// Print highlighting
+
+						for (size_t i = 0; i < highl.size(); i++)
+						{
+							if (highl[i].x == col && highl[i].y == row - 1)
+							{
+								printf(HIGHL_COLOUR HIGHL_CHAR);
+								goto end_highl;
+							}
+						}
+
+						printf(" ");
+						end_highl:;
+					}
+
+					printf("\e[m\n");
+				}
+
+				printf("\n   ");
+
+				for (uint8_t i = 0; i < 8; i++)
+				{
+					printf("%c ", 'A' + i);
+				}
+
+				printf("\n");
+			}
+
 			bool white_in_check()
 			{
 				for (uint8_t row = 0; row < 8; row++)
@@ -1383,41 +1458,35 @@ namespace chess
 
 				if (moved_piece == Pieces::WHITE_KING)
 				{
-					debug("setting white king moved");
 					SET_WHITE_KING_MOVED;
 				}
 
 				if (!WHITE_RIGHT_ROOK_MOVED && moved_piece == Pieces::WHITE_ROOK
 					&& from.x == 7 || squares[0][7] != Pieces::WHITE_ROOK)
 				{
-					debug("setting white right rook moved");
 					SET_WHITE_RIGHT_ROOK_MOVED;
 				}
 
 				if (!WHITE_LEFT_ROOK_MOVED && moved_piece == Pieces::WHITE_ROOK
 					&& from.x == 0 || squares[0][0] != Pieces::WHITE_ROOK)
 				{
-					debug("setting white left rook moved");
 					SET_WHITE_LEFT_ROOK_MOVED;
 				}
 
 				if (moved_piece == Pieces::BLACK_KING)
 				{
-					debug("setting black king moved");
 					SET_BLACK_KING_MOVED;
 				}
 
 				if (!BLACK_RIGHT_ROOK_MOVED && moved_piece == Pieces::BLACK_ROOK
 					&& from.x == 7 || squares[7][7] != Pieces::BLACK_ROOK)
 				{
-					debug("setting black right rook moved");
 					SET_BLACK_RIGHT_ROOK_MOVED;
 				}
 
 				if (!BLACK_LEFT_ROOK_MOVED && moved_piece == Pieces::BLACK_ROOK
 					&& from.x == 0 || squares[7][0] != Pieces::BLACK_ROOK)
 				{
-					debug("setting black right rook moved");
 					SET_BLACK_LEFT_ROOK_MOVED;
 				}
 
@@ -1428,27 +1497,23 @@ namespace chess
 
 				if (moved_piece == Pieces::WHITE_PAWN && to.y - from.y == 2)
 				{
-					debug("white en passant flag %d set", from.x);
 					white_en_passant_flags |= from.x;
 				}
 
 				if (moved_piece == Pieces::BLACK_PAWN && from.y - to.y == 2)
 				{
-					debug("black en passant flag %d set", from.x);
 					black_en_passant_flags |= from.x;
 				}
 
 				if (moved_piece == Pieces::WHITE_PAWN &&
 					black_en_passant_flags & to.x && to.x != from.x)
 				{
-					debug("ate black pawn en passant");
 					squares[from.y][to.x] = Pieces::UNOCCUPIED;
 				}
 
 				if (moved_piece == Pieces::BLACK_PAWN &&
 					white_en_passant_flags & to.x && to.x != from.x)
 				{
-					debug("ate white pawn en passant");
 					squares[from.y][to.x] = Pieces::UNOCCUPIED;
 				}
 

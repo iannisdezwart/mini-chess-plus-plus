@@ -13,6 +13,7 @@ int main()
 	std::vector<chess::Square> moves;
 	std::vector<chess::Square> warn;
 	bool new_move = true;
+	bool upsd = false;
 
 	while (true)
 	{
@@ -33,7 +34,14 @@ int main()
 			}
 		}
 
-		board.print(cursor, sel, moves, warn);
+		if (upsd)
+		{
+			board.print_upsd(cursor, sel, moves, warn);
+		}
+		else
+		{
+			board.print(cursor, sel, moves, warn);
+		}
 
 		if (new_move)
 		{
@@ -71,23 +79,59 @@ int main()
 		switch (key)
 		{
 			case keypress::ARROW_UP:
-				cursor.y++;
-				if (cursor.y > 7) cursor.y -= 8;
+				if (upsd)
+				{
+					cursor.y--;
+					if (cursor.y < 0) cursor.y += 8;
+				}
+				else
+				{
+					cursor.y++;
+					if (cursor.y > 7) cursor.y -= 8;
+				}
+
 				break;
 
 			case keypress::ARROW_DOWN:
-				cursor.y--;
-				if (cursor.y < 0) cursor.y += 8;
+				if (upsd)
+				{
+					cursor.y++;
+					if (cursor.y > 7) cursor.y -= 8;
+				}
+				else
+				{
+					cursor.y--;
+					if (cursor.y < 0) cursor.y += 8;
+				}
+
 				break;
 
 			case keypress::ARROW_RIGHT:
-				cursor.x++;
-				if (cursor.x > 7) cursor.x -= 8;
+				if (upsd)
+				{
+					cursor.x--;
+					if (cursor.x < 0) cursor.x += 8;
+				}
+				else
+				{
+					cursor.x++;
+					if (cursor.x > 7) cursor.x -= 8;
+				}
+
 				break;
 
 			case keypress::ARROW_LEFT:
-				cursor.x--;
-				if (cursor.x < 0) cursor.x += 8;
+				if (upsd)
+				{
+					cursor.x++;
+					if (cursor.x > 7) cursor.x -= 8;
+				}
+				else
+				{
+					cursor.x--;
+					if (cursor.x < 0) cursor.x += 8;
+				}
+
 				break;
 
 			case keypress::SPACE:
