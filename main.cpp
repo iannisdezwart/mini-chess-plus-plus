@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 
+#define DEBUG
+
 #include "keypress.hpp"
 #include "board.hpp"
 

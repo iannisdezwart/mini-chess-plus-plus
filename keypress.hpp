@@ -23,7 +23,7 @@ namespace keypress
 		ch = getchar();
 		tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
 
-		debug("getch() -> %d\n", ch);
+		// debug("getch() -> %d", ch);
 
 		return ch;
 	}
