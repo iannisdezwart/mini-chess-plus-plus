@@ -18,10 +18,10 @@ int main()
 	{
 		printf("\e[2J\e[H"); // Clears screen
 
-		warn.clear();
-
 		if (new_move)
 		{
+			warn.clear();
+
 			if (board.white_in_check())
 			{
 				warn.push_back(board.white_king);

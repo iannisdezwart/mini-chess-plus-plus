@@ -364,14 +364,14 @@ namespace chess
 					{
 						if (squares[y + 1][x] == Pieces::UNOCCUPIED)
 						{
-							if (!in_check || is_legal(x, y, x, y + 1))
+							if (!check_check || is_legal(x, y, x, y + 1))
 							{
 								moves.push_back(Square(x, y + 1));
 							}
 
 							if (y == 1 && squares[y + 2][x] == Pieces::UNOCCUPIED)
 							{
-								if (!in_check || is_legal(x, y, x, y + 2))
+								if (!check_check || is_legal(x, y, x, y + 2))
 								{
 									moves.push_back(Square(x, y + 2));
 								}
@@ -380,7 +380,7 @@ namespace chess
 
 						if (is_black(squares[y + 1][x - 1]))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y + 1))
+							if (!check_check || is_legal(x, y, x - 1, y + 1))
 							{
 								moves.push_back(Square(x - 1, y + 1));
 							}
@@ -388,7 +388,7 @@ namespace chess
 
 						if (is_black(squares[y + 1][x + 1]))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y + 1))
+							if (!check_check || is_legal(x, y, x + 1, y + 1))
 							{
 								moves.push_back(Square(x + 1, y + 1));
 							}
@@ -399,7 +399,7 @@ namespace chess
 						if (squares[y][x - 1] == Pieces::BLACK_PAWN
 							&& black_en_passant_flags & (x - 1))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y + 1))
+							if (!check_check || is_legal(x, y, x - 1, y + 1))
 							{
 								moves.push_back(Square(x - 1, y + 1));
 							}
@@ -408,7 +408,7 @@ namespace chess
 						if (squares[y][x + 1] == Pieces::BLACK_PAWN
 							&& black_en_passant_flags & (x + 1))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y + 1))
+							if (!check_check || is_legal(x, y, x + 1, y + 1))
 							{
 								moves.push_back(Square(x + 1, y + 1));
 							}
@@ -421,14 +421,14 @@ namespace chess
 					{
 						if (squares[y - 1][x] == Pieces::UNOCCUPIED)
 						{
-							if (!in_check || is_legal(x, y, x, y - 1))
+							if (!check_check || is_legal(x, y, x, y - 1))
 							{
 								moves.push_back(Square(x, y - 1));
 							}
 
 							if (y == 6 && squares[y - 2][x] == Pieces::UNOCCUPIED)
 							{
-								if (!in_check || is_legal(x, y, x, y - 2))
+								if (!check_check || is_legal(x, y, x, y - 2))
 								{
 									moves.push_back(Square(x, y - 2));
 								}
@@ -437,7 +437,7 @@ namespace chess
 
 						if (is_white(squares[y - 1][x - 1]))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y - 1))
+							if (!check_check || is_legal(x, y, x - 1, y - 1))
 							{
 								moves.push_back(Square(x - 1, y - 1));
 							}
@@ -445,7 +445,7 @@ namespace chess
 
 						if (is_white(squares[y - 1][x + 1]))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y - 1))
+							if (!check_check || is_legal(x, y, x + 1, y - 1))
 							{
 								moves.push_back(Square(x + 1, y - 1));
 							}
@@ -456,7 +456,7 @@ namespace chess
 						if (squares[y][x - 1] == Pieces::WHITE_PAWN
 							&& white_en_passant_flags & (x - 1))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y - 1))
+							if (!check_check || is_legal(x, y, x - 1, y - 1))
 							{
 								moves.push_back(Square(x - 1, y - 1));
 							}
@@ -465,7 +465,7 @@ namespace chess
 						if (squares[y][x + 1] == Pieces::WHITE_PAWN
 							&& white_en_passant_flags & (x + 1))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y - 1))
+							if (!check_check || is_legal(x, y, x + 1, y - 1))
 							{
 								moves.push_back(Square(x + 1, y - 1));
 							}
@@ -481,7 +481,7 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -495,7 +495,7 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -509,7 +509,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -523,7 +523,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -542,7 +542,7 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -556,7 +556,7 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -570,7 +570,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -584,7 +584,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -600,7 +600,7 @@ namespace chess
 					{
 						if (x - 1 >= 0 && y - 2 >= 0 && !is_white(squares[y - 2][x - 1]))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y - 2))
+							if (!check_check || is_legal(x, y, x - 1, y - 2))
 							{
 								moves.push_back(Square(x - 1, y - 2));
 							}
@@ -608,7 +608,7 @@ namespace chess
 
 						if (x - 2 >= 0 && y - 1 >= 0 && !is_white(squares[y - 1][x - 2]))
 						{
-							if (!in_check || is_legal(x, y, x - 2, y - 1))
+							if (!check_check || is_legal(x, y, x - 2, y - 1))
 							{
 								moves.push_back(Square(x - 2, y - 1));
 							}
@@ -616,7 +616,7 @@ namespace chess
 
 						if (x + 1 < 8 && y - 2 >= 0 && !is_white(squares[y - 2][x + 1]))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y - 2))
+							if (!check_check || is_legal(x, y, x + 1, y - 2))
 							{
 								moves.push_back(Square(x + 1, y - 2));
 							}
@@ -624,7 +624,7 @@ namespace chess
 
 						if (x + 2 < 8 && y - 1 >= 0 && !is_white(squares[y - 1][x + 2]))
 						{
-							if (!in_check || is_legal(x, y, x + 2, y - 1))
+							if (!check_check || is_legal(x, y, x + 2, y - 1))
 							{
 								moves.push_back(Square(x + 2, y - 1));
 							}
@@ -632,7 +632,7 @@ namespace chess
 
 						if (x - 1 >= 0 && y + 2 < 8 && !is_white(squares[y + 2][x - 1]))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y + 2))
+							if (!check_check || is_legal(x, y, x - 1, y + 2))
 							{
 								moves.push_back(Square(x - 1, y + 2));
 							}
@@ -640,7 +640,7 @@ namespace chess
 
 						if (x - 2 >= 0 && y + 1 < 8 && !is_white(squares[y + 1][x - 2]))
 						{
-							if (!in_check || is_legal(x, y, x - 2, y + 1))
+							if (!check_check || is_legal(x, y, x - 2, y + 1))
 							{
 								moves.push_back(Square(x - 2, y + 1));
 							}
@@ -648,7 +648,7 @@ namespace chess
 
 						if (x + 1 < 8 && y + 2 < 8 && !is_white(squares[y + 2][x + 1]))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y + 2))
+							if (!check_check || is_legal(x, y, x + 1, y + 2))
 							{
 								moves.push_back(Square(x + 1, y + 2));
 							}
@@ -656,7 +656,7 @@ namespace chess
 
 						if (x + 2 < 8 && y + 1 < 8 && !is_white(squares[y + 1][x + 2]))
 						{
-							if (!in_check || is_legal(x, y, x + 2, y + 1))
+							if (!check_check || is_legal(x, y, x + 2, y + 1))
 							{
 								moves.push_back(Square(x + 2, y + 1));
 							}
@@ -669,7 +669,7 @@ namespace chess
 					{
 						if (x - 1 >= 0 && y - 2 >= 0 && !is_black(squares[y - 2][x - 1]))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y - 2))
+							if (!check_check || is_legal(x, y, x - 1, y - 2))
 							{
 								moves.push_back(Square(x - 1, y - 2));
 							}
@@ -677,7 +677,7 @@ namespace chess
 
 						if (x - 2 >= 0 && y - 1 >= 0 && !is_black(squares[y - 1][x - 2]))
 						{
-							if (!in_check || is_legal(x, y, x - 2, y - 1))
+							if (!check_check || is_legal(x, y, x - 2, y - 1))
 							{
 								moves.push_back(Square(x - 2, y - 1));
 							}
@@ -685,7 +685,7 @@ namespace chess
 
 						if (x + 1 < 8 && y - 2 >= 0 && !is_black(squares[y - 2][x + 1]))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y - 2))
+							if (!check_check || is_legal(x, y, x + 1, y - 2))
 							{
 								moves.push_back(Square(x + 1, y - 2));
 							}
@@ -693,7 +693,7 @@ namespace chess
 
 						if (x + 2 < 8 && y - 1 >= 0 && !is_black(squares[y - 1][x + 2]))
 						{
-							if (!in_check || is_legal(x, y, x + 2, y - 1))
+							if (!check_check || is_legal(x, y, x + 2, y - 1))
 							{
 								moves.push_back(Square(x + 2, y - 1));
 							}
@@ -701,7 +701,7 @@ namespace chess
 
 						if (x - 1 >= 0 && y + 2 < 8 && !is_black(squares[y + 2][x - 1]))
 						{
-							if (!in_check || is_legal(x, y, x - 1, y + 2))
+							if (!check_check || is_legal(x, y, x - 1, y + 2))
 							{
 								moves.push_back(Square(x - 1, y + 2));
 							}
@@ -709,7 +709,7 @@ namespace chess
 
 						if (x - 2 >= 0 && y + 1 < 8 && !is_black(squares[y + 1][x - 2]))
 						{
-							if (!in_check || is_legal(x, y, x - 2, y + 1))
+							if (!check_check || is_legal(x, y, x - 2, y + 1))
 							{
 								moves.push_back(Square(x - 2, y + 1));
 							}
@@ -717,7 +717,7 @@ namespace chess
 
 						if (x + 1 < 8 && y + 2 < 8 && !is_black(squares[y + 2][x + 1]))
 						{
-							if (!in_check || is_legal(x, y, x + 1, y + 2))
+							if (!check_check || is_legal(x, y, x + 1, y + 2))
 							{
 								moves.push_back(Square(x + 1, y + 2));
 							}
@@ -725,7 +725,7 @@ namespace chess
 
 						if (x + 2 < 8 && y + 1 < 8 && !is_black(squares[y + 1][x + 2]))
 						{
-							if (!in_check || is_legal(x, y, x + 2, y + 1))
+							if (!check_check || is_legal(x, y, x + 2, y + 1))
 							{
 								moves.push_back(Square(x + 2, y + 1));
 							}
@@ -741,7 +741,7 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -754,7 +754,7 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -767,7 +767,7 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -780,7 +780,7 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -798,7 +798,7 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -811,7 +811,7 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -824,7 +824,7 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -837,7 +837,7 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -855,7 +855,7 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -869,7 +869,7 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -883,7 +883,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -897,7 +897,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_white(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -911,7 +911,7 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -924,7 +924,7 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -937,7 +937,7 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -950,7 +950,7 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_white(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -968,7 +968,7 @@ namespace chess
 						while (diag.x < 8 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -982,7 +982,7 @@ namespace chess
 						while (diag.x < 8 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -996,7 +996,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y >= 0)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1010,7 +1010,7 @@ namespace chess
 						while (diag.x >= 0 && diag.y < 8)
 						{
 							if (is_black(squares[diag.y][diag.x])) break;
-							if (!in_check || is_legal(x, y, diag.x, diag.y))
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1024,7 +1024,7 @@ namespace chess
 						while (line.x < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1037,7 +1037,7 @@ namespace chess
 						while (line.x >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1050,7 +1050,7 @@ namespace chess
 						while (line.y < 8)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1063,7 +1063,7 @@ namespace chess
 						while (line.y >= 0)
 						{
 							if (is_black(squares[line.y][line.x])) break;
-							if (!in_check || is_legal(x, y, line.x, line.y))
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1082,13 +1082,7 @@ namespace chess
 						if (diag.x < 8 && diag.y < 8
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!white_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1099,13 +1093,7 @@ namespace chess
 						if (diag.x >= 0 && diag.y < 8
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!white_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1116,13 +1104,7 @@ namespace chess
 						if (diag.x >= 0 && diag.y >= 0
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!white_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1133,13 +1115,7 @@ namespace chess
 						if (diag.x < 8 && diag.y >= 0
 							&& !is_white(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!white_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1149,13 +1125,7 @@ namespace chess
 
 						if (line.x < 8 && !is_white(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!white_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1165,13 +1135,7 @@ namespace chess
 
 						if (line.x >= 0 && !is_white(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!white_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1181,13 +1145,7 @@ namespace chess
 
 						if (line.y < 8 && !is_white(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!white_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1197,13 +1155,7 @@ namespace chess
 
 						if (line.y >= 0 && !is_white(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!white_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1214,7 +1166,8 @@ namespace chess
 						if (!WHITE_KING_MOVED && !WHITE_RIGHT_ROOK_MOVED
 							&& squares[y][x + 1] == Pieces::UNOCCUPIED
 							&& squares[y][x + 2] == Pieces::UNOCCUPIED
-							&& !in_check
+							&& check_check
+							&& !white_in_check()
 							&& is_legal(x, y, x + 1, y)
 							&& is_legal(x, y, x + 2, y))
 						{
@@ -1225,7 +1178,8 @@ namespace chess
 							&& squares[y][x - 1] == Pieces::UNOCCUPIED
 							&& squares[y][x - 2] == Pieces::UNOCCUPIED
 							&& squares[y][x - 3] == Pieces::UNOCCUPIED
-							&& !in_check
+							&& check_check
+							&& !white_in_check()
 							&& is_legal(x, y, x - 1, y)
 							&& is_legal(x, y, x - 2, y))
 						{
@@ -1243,13 +1197,7 @@ namespace chess
 						if (diag.x < 8 && diag.y < 8
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!black_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1260,13 +1208,7 @@ namespace chess
 						if (diag.x >= 0 && diag.y < 8
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!black_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1277,13 +1219,7 @@ namespace chess
 						if (diag.x >= 0 && diag.y >= 0
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!black_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1294,13 +1230,7 @@ namespace chess
 						if (diag.x < 8 && diag.y >= 0
 							&& !is_black(squares[diag.y][diag.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, diag);
-								if (!black_in_check()) moves.push_back(diag);
-								unpretend(orig, diag, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, diag.x, diag.y))
 							{
 								moves.push_back(diag);
 							}
@@ -1310,13 +1240,7 @@ namespace chess
 
 						if (line.x < 8 && !is_black(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!black_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1326,13 +1250,7 @@ namespace chess
 
 						if (line.x >= 0 && !is_black(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!black_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1342,13 +1260,7 @@ namespace chess
 
 						if (line.y < 8 && !is_black(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!black_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1358,13 +1270,7 @@ namespace chess
 
 						if (line.y >= 0 && !is_black(squares[line.y][line.x]))
 						{
-							if (check_check)
-							{
-								enum Pieces old_piece = pretend(orig, line);
-								if (!black_in_check()) moves.push_back(line);
-								unpretend(orig, line, old_piece);
-							}
-							else
+							if (!check_check || is_legal(x, y, line.x, line.y))
 							{
 								moves.push_back(line);
 							}
@@ -1375,7 +1281,8 @@ namespace chess
 						if (!BLACK_KING_MOVED && !BLACK_RIGHT_ROOK_MOVED
 							&& squares[y][x + 1] == Pieces::UNOCCUPIED
 							&& squares[y][x + 2] == Pieces::UNOCCUPIED
-							&& !in_check
+							&& check_check
+							&& !black_in_check()
 							&& is_legal(x, y, x + 1, y)
 							&& is_legal(x, y, x + 2, y))
 						{
@@ -1386,7 +1293,8 @@ namespace chess
 							&& squares[y][x - 1] == Pieces::UNOCCUPIED
 							&& squares[y][x - 2] == Pieces::UNOCCUPIED
 							&& squares[y][x - 3] == Pieces::UNOCCUPIED
-							&& !in_check
+							&& check_check
+							&& !black_in_check()
 							&& is_legal(x, y, x - 1, y)
 							&& is_legal(x, y, x - 2, y))
 						{
@@ -1542,6 +1450,80 @@ namespace chess
 				{
 					debug("ate white pawn en passant");
 					squares[from.y][to.x] = Pieces::UNOCCUPIED;
+				}
+
+				// Pawn promotion
+
+				if (moved_piece == Pieces::WHITE_PAWN && to.y == 7)
+				{
+					printf("select promotion:\n");
+					printf("1: " BISHOP ", ");
+					printf("2: " KNIGHT ", ");
+					printf("3: " ROOK ", ");
+					printf("4: " QUEEN "\n");
+					try_again:
+					printf("> ");
+
+					char choice;
+					std::cin >> choice;
+
+					switch (choice)
+					{
+						case '1':
+							squares[to.y][to.x] = Pieces::WHITE_BISHOP;
+							break;
+
+						case '2':
+							squares[to.y][to.x] = Pieces::WHITE_KNIGHT;
+							break;
+
+						case '3':
+							squares[to.y][to.x] = Pieces::WHITE_ROOK;
+							break;
+
+						case '4':
+							squares[to.y][to.x] = Pieces::WHITE_QUEEN;
+							break;
+
+						default:
+							goto try_again;
+					}
+				}
+
+				if (moved_piece == Pieces::BLACK_PAWN && to.y == 0)
+				{
+					printf("select promotion:\n");
+					printf("1: " BISHOP ", ");
+					printf("2: " KNIGHT ", ");
+					printf("3: " ROOK ", ");
+					printf("4: " QUEEN "\n");
+					try_again_1:
+					printf("> ");
+
+					char choice;
+					std::cin >> choice;
+
+					switch (choice)
+					{
+						case '1':
+							squares[to.y][to.x] = Pieces::BLACK_BISHOP;
+							break;
+
+						case '2':
+							squares[to.y][to.x] = Pieces::BLACK_KNIGHT;
+							break;
+
+						case '3':
+							squares[to.y][to.x] = Pieces::BLACK_ROOK;
+							break;
+
+						case '4':
+							squares[to.y][to.x] = Pieces::BLACK_QUEEN;
+							break;
+
+						default:
+							goto try_again_1;
+					}
 				}
 
 				if (turn == Players::WHITE) turn = Players::BLACK;
