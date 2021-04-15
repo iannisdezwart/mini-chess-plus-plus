@@ -134,6 +134,9 @@ namespace chess
 			#define SET_BLACK_LEFT_ROOK_MOVED  castling_flags |= BLRM
 			#define SET_BLACK_RIGHT_ROOK_MOVED castling_flags |= BRRM
 
+			uint8_t white_en_passant_flags = 0;
+			uint8_t black_en_passant_flags = 0;
+
 			Board() : turn(Players::WHITE)
 			{
 				squares[0][0] = Pieces::WHITE_ROOK;
@@ -281,6 +284,20 @@ namespace chess
 							moves.push_back(Square(x + 1, y + 1));
 						}
 
+						// En passant
+
+						if (squares[y][x - 1] == Pieces::BLACK_PAWN
+							&& black_en_passant_flags & (x - 1))
+						{
+							moves.push_back(Square(x - 1, y + 1));
+						}
+
+						if (squares[y][x + 1] == Pieces::BLACK_PAWN
+							&& black_en_passant_flags & (x + 1))
+						{
+							moves.push_back(Square(x + 1, y + 1));
+						}
+
 						break;
 					}
 
@@ -302,6 +319,20 @@ namespace chess
 						}
 
 						if (is_white(squares[y - 1][x + 1]))
+						{
+							moves.push_back(Square(x + 1, y - 1));
+						}
+
+						// En passant
+
+						if (squares[y][x - 1] == Pieces::WHITE_PAWN
+							&& white_en_passant_flags & (x - 1))
+						{
+							moves.push_back(Square(x - 1, y - 1));
+						}
+
+						if (squares[y][x + 1] == Pieces::WHITE_PAWN
+							&& white_en_passant_flags & (x + 1))
 						{
 							moves.push_back(Square(x + 1, y - 1));
 						}
@@ -1017,6 +1048,37 @@ namespace chess
 				{
 					debug("setting black right rook moved");
 					SET_BLACK_LEFT_ROOK_MOVED;
+				}
+
+				// En passant
+
+				if (turn == Players::WHITE) white_en_passant_flags = 0;
+				else black_en_passant_flags = 0;
+
+				if (moved_piece == Pieces::WHITE_PAWN && to.y - from.y == 2)
+				{
+					debug("white en passant flag %d set", from.x);
+					white_en_passant_flags |= from.x;
+				}
+
+				if (moved_piece == Pieces::BLACK_PAWN && from.y - to.y == 2)
+				{
+					debug("black en passant flag %d set", from.x);
+					black_en_passant_flags |= from.x;
+				}
+
+				if (moved_piece == Pieces::WHITE_PAWN &&
+					black_en_passant_flags & to.x && to.x != from.x)
+				{
+					debug("ate black pawn en passant");
+					squares[from.y][to.x] = Pieces::UNOCCUPIED;
+				}
+
+				if (moved_piece == Pieces::BLACK_PAWN &&
+					white_en_passant_flags & to.x && to.x != from.x)
+				{
+					debug("ate white pawn en passant");
+					squares[from.y][to.x] = Pieces::UNOCCUPIED;
 				}
 
 				if (turn == Players::WHITE) turn = Players::BLACK;
