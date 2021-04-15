@@ -11,11 +11,25 @@ int main()
 	chess::Square cursor(3, 3);
 	chess::Square sel(-1, -1);
 	std::vector<chess::Square> moves;
+	std::vector<chess::Square> warn;
 
 	while (true)
 	{
 		printf("\e[2J\e[H"); // Clears screen
-		board.print(cursor, sel, moves);
+
+		warn.clear();
+
+		if (board.white_in_check())
+		{
+			warn.push_back(board.white_king);
+		}
+
+		if (board.black_in_check())
+		{
+			warn.push_back(board.black_king);
+		}
+
+		board.print(cursor, sel, moves, warn);
 		uint8_t key = keypress::get_key();
 
 		switch (key)

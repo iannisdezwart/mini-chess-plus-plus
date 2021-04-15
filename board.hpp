@@ -6,7 +6,8 @@
 #define BLACK_SQUARE "\e[48;2;100;100;100m"
 #define WHITE_SQUARE "\e[48;2;140;140;140m"
 #define SEL_SQUARE "\e[48;2;120;120;255m"
-#define CURSOR_SQUARE "\e[48;2;255;120;120m"
+#define WARN_SQUARE "\e[48;2;255;120;120m"
+#define CURSOR_SQUARE "\e[48;2;255;120;255m"
 #define HIGHL_COLOUR "\e[38;2;120;255;120m"
 #define HIGHL_CHAR "*"
 #define BLACK_PIECE "\e[38;2;0;0;0m"
@@ -137,7 +138,10 @@ namespace chess
 			uint8_t white_en_passant_flags = 0;
 			uint8_t black_en_passant_flags = 0;
 
-			Board() : turn(Players::WHITE)
+			Square white_king;
+			Square black_king;
+
+			Board() : turn(Players::WHITE), white_king(-1, -1), black_king(-1, -1)
 			{
 				squares[0][0] = Pieces::WHITE_ROOK;
 				squares[0][1] = Pieces::WHITE_KNIGHT;
@@ -185,7 +189,8 @@ namespace chess
 			}
 
 			void print(Square cursor, Square sel = { 8, 8 },
-				std::vector<Square> highl = std::vector<Square>())
+				std::vector<Square> highl = std::vector<Square>(),
+				std::vector<Square> warn = std::vector<Square>())
 			{
 				for (uint8_t row = 8; row != 0; row--)
 				{
@@ -207,6 +212,16 @@ namespace chess
 						if (sel.x == col && sel.y == row - 1)
 						{
 							printf(SEL_SQUARE);
+						}
+
+						// Warn square
+
+						for (size_t i = 0; i < warn.size(); i++)
+						{
+							if (warn[i].x == col && warn[i].y == row - 1)
+							{
+								printf(WARN_SQUARE);
+							}
 						}
 
 						// Cursor square
@@ -246,6 +261,56 @@ namespace chess
 				}
 
 				printf("\n");
+			}
+
+			bool white_in_check()
+			{
+				for (uint8_t row = 0; row < 8; row++)
+				{
+					for (uint8_t col = 0; col < 8; col++)
+					{
+						if (is_black(squares[row][col]))
+						{
+							std::vector<Square> moves = possible_moves(col, row);
+
+							for (const Square& move : moves)
+							{
+								if (squares[move.y][move.x] == Pieces::WHITE_KING)
+								{
+									white_king = Square(move.x, move.y);
+									return true;
+								}
+							}
+						}
+					}
+				}
+
+				return false;
+			}
+
+			bool black_in_check()
+			{
+				for (uint8_t row = 0; row < 8; row++)
+				{
+					for (uint8_t col = 0; col < 8; col++)
+					{
+						if (is_white(squares[row][col]))
+						{
+							std::vector<Square> moves = possible_moves(col, row);
+
+							for (const Square& move : moves)
+							{
+								if (squares[move.y][move.x] == Pieces::BLACK_KING)
+								{
+									black_king = Square(move.x, move.y);
+									return true;
+								}
+							}
+						}
+					}
+				}
+
+				return false;
 			}
 
 			std::vector<Square> possible_moves(uint8_t x, uint8_t y)
@@ -860,10 +925,6 @@ namespace chess
 
 						// Castling
 
-						debug("selected white king, WHITE_KING_MOVED = %d, "
-							"WHITE_RIGHT_ROOK_MOVED = %d, WHITE_LEFT_ROOK_MOVED = %d",
-							WHITE_KING_MOVED, WHITE_RIGHT_ROOK_MOVED, WHITE_LEFT_ROOK_MOVED);
-
 						if (!WHITE_KING_MOVED && !WHITE_RIGHT_ROOK_MOVED
 							&& squares[y][x + 1] == Pieces::UNOCCUPIED
 							&& squares[y][x + 2] == Pieces::UNOCCUPIED)
@@ -947,10 +1008,6 @@ namespace chess
 						}
 
 						// Castling
-
-						debug("selected black king, BLACK_KING_MOVED = %d, "
-							"BLACK_RIGHT_ROOK_MOVED = %d, BLACK_LEFT_ROOK_MOVED = %d",
-							BLACK_KING_MOVED, BLACK_RIGHT_ROOK_MOVED, BLACK_LEFT_ROOK_MOVED);
 
 						if (!BLACK_KING_MOVED && !BLACK_RIGHT_ROOK_MOVED
 							&& squares[y][x + 1] == Pieces::UNOCCUPIED
