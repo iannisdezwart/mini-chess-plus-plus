@@ -111,13 +111,28 @@ namespace chess
 			enum Pieces squares[8][8];
 			enum Players turn;
 
-			bool white_king_moved = false;
-			bool white_left_rook_moved = false;
-			bool white_right_rook_moved = false;
+			uint8_t castling_flags = 0;
 
-			bool black_king_moved = false;
-			bool black_left_rook_moved = false;
-			bool black_right_rook_moved = false;
+			#define WKM  0b00000001
+			#define WLRM 0b00000010
+			#define WRRM 0b00000100
+			#define BKM  0b00001000
+			#define BLRM 0b00010000
+			#define BRRM 0b00100000
+
+			#define WHITE_KING_MOVED       (castling_flags & WKM)
+			#define WHITE_LEFT_ROOK_MOVED  (castling_flags & WLRM)
+			#define WHITE_RIGHT_ROOK_MOVED (castling_flags & WRRM)
+			#define BLACK_KING_MOVED       (castling_flags & BKM)
+			#define BLACK_LEFT_ROOK_MOVED  (castling_flags & BLRM)
+			#define BLACK_RIGHT_ROOK_MOVED (castling_flags & BRRM)
+
+			#define SET_WHITE_KING_MOVED       castling_flags |= WKM
+			#define SET_WHITE_LEFT_ROOK_MOVED  castling_flags |= WLRM
+			#define SET_WHITE_RIGHT_ROOK_MOVED castling_flags |= WRRM
+			#define SET_BLACK_KING_MOVED       castling_flags |= BKM
+			#define SET_BLACK_LEFT_ROOK_MOVED  castling_flags |= BLRM
+			#define SET_BLACK_RIGHT_ROOK_MOVED castling_flags |= BRRM
 
 			Board() : turn(Players::WHITE)
 			{
@@ -814,7 +829,11 @@ namespace chess
 
 						// Castling
 
-						if (!white_king_moved && !white_right_rook_moved
+						debug("selected white king, WHITE_KING_MOVED = %d, "
+							"WHITE_RIGHT_ROOK_MOVED = %d, WHITE_LEFT_ROOK_MOVED = %d",
+							WHITE_KING_MOVED, WHITE_RIGHT_ROOK_MOVED, WHITE_LEFT_ROOK_MOVED);
+
+						if (!WHITE_KING_MOVED && !WHITE_RIGHT_ROOK_MOVED
 							&& squares[y][x + 1] == Pieces::UNOCCUPIED
 							&& squares[y][x + 2] == Pieces::UNOCCUPIED)
 							// Todo: add not out/through/in chess check
@@ -822,7 +841,7 @@ namespace chess
 							moves.push_back(Square(x + 2, y));
 						}
 
-						if (!white_king_moved && !white_left_rook_moved
+						if (!WHITE_KING_MOVED && !WHITE_LEFT_ROOK_MOVED
 							&& squares[y][x - 1] == Pieces::UNOCCUPIED
 							&& squares[y][x - 2] == Pieces::UNOCCUPIED
 							&& squares[y][x - 3] == Pieces::UNOCCUPIED)
@@ -898,7 +917,11 @@ namespace chess
 
 						// Castling
 
-						if (!black_king_moved && !black_right_rook_moved
+						debug("selected black king, BLACK_KING_MOVED = %d, "
+							"BLACK_RIGHT_ROOK_MOVED = %d, BLACK_LEFT_ROOK_MOVED = %d",
+							BLACK_KING_MOVED, BLACK_RIGHT_ROOK_MOVED, BLACK_LEFT_ROOK_MOVED);
+
+						if (!BLACK_KING_MOVED && !BLACK_RIGHT_ROOK_MOVED
 							&& squares[y][x + 1] == Pieces::UNOCCUPIED
 							&& squares[y][x + 2] == Pieces::UNOCCUPIED)
 							// Todo: add not out/through/in chess check
@@ -906,7 +929,7 @@ namespace chess
 							moves.push_back(Square(x + 2, y));
 						}
 
-						if (!black_king_moved && !black_left_rook_moved
+						if (!BLACK_KING_MOVED && !BLACK_LEFT_ROOK_MOVED
 							&& squares[y][x - 1] == Pieces::UNOCCUPIED
 							&& squares[y][x - 2] == Pieces::UNOCCUPIED
 							&& squares[y][x - 3] == Pieces::UNOCCUPIED)
@@ -958,36 +981,42 @@ namespace chess
 
 				if (moved_piece == Pieces::WHITE_KING)
 				{
-					white_king_moved = true;
+					debug("setting white king moved");
+					SET_WHITE_KING_MOVED;
 				}
 
-				if (!white_right_rook_moved && moved_piece == Pieces::WHITE_ROOK
-					&& from.x == 7)
+				if (!WHITE_RIGHT_ROOK_MOVED && moved_piece == Pieces::WHITE_ROOK
+					&& from.x == 7 || squares[0][7] != Pieces::WHITE_ROOK)
 				{
-					white_right_rook_moved = true;
+					debug("setting white right rook moved");
+					SET_WHITE_RIGHT_ROOK_MOVED;
 				}
 
-				if (!white_left_rook_moved && moved_piece == Pieces::WHITE_ROOK
-					&& from.x == 0)
+				if (!WHITE_LEFT_ROOK_MOVED && moved_piece == Pieces::WHITE_ROOK
+					&& from.x == 0 || squares[0][0] != Pieces::WHITE_ROOK)
 				{
-					white_left_rook_moved = true;
+					debug("setting white left rook moved");
+					SET_WHITE_LEFT_ROOK_MOVED;
 				}
 
 				if (moved_piece == Pieces::BLACK_KING)
 				{
-					black_king_moved = true;
+					debug("setting black king moved");
+					SET_BLACK_KING_MOVED;
 				}
 
-				if (!black_right_rook_moved && moved_piece == Pieces::BLACK_ROOK
-					&& from.x == 7)
+				if (!BLACK_RIGHT_ROOK_MOVED && moved_piece == Pieces::BLACK_ROOK
+					&& from.x == 7 || squares[7][7] != Pieces::BLACK_ROOK)
 				{
-					black_right_rook_moved = true;
+					debug("setting black right rook moved");
+					SET_BLACK_RIGHT_ROOK_MOVED;
 				}
 
-				if (!black_left_rook_moved && moved_piece == Pieces::BLACK_ROOK
-					&& from.x == 0)
+				if (!BLACK_LEFT_ROOK_MOVED && moved_piece == Pieces::BLACK_ROOK
+					&& from.x == 0 || squares[7][0] != Pieces::BLACK_ROOK)
 				{
-					black_left_rook_moved = true;
+					debug("setting black right rook moved");
+					SET_BLACK_LEFT_ROOK_MOVED;
 				}
 
 				if (turn == Players::WHITE) turn = Players::BLACK;
