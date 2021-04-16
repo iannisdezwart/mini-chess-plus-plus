@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 
 #define DEBUG
+
 #include "websocket-server.hpp"
 #include "board.hpp"
 

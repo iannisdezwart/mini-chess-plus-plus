@@ -9,6 +9,7 @@
 #include <boost/asio/buffers_iterator.hpp>
 #include <cstdlib>
 #include "debug.hpp"
+#include "event-emitter.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -18,28 +19,6 @@ using tcp = boost::asio::ip::tcp;
 
 namespace websocket_server
 {
-	template <typename... Args>
-	class EventEmitter
-	{
-		private:
-			typedef std::function<void(Args...)> callback_t;
-			callback_t callback = NULL;
-
-		public:
-			void add_listener(callback_t&& callback)
-			{
-				this->callback = std::move(callback);
-			}
-
-			void trigger(Args... args)
-			{
-				if (callback != NULL)
-				{
-					callback(args...);
-				}
-			}
-	};
-
 	class Conn : public std::enable_shared_from_this<Conn>
 	{
 		private:
@@ -47,8 +26,8 @@ namespace websocket_server
 			beast::flat_buffer read_buf;
 
 		public:
-			EventEmitter<std::string> message_event;
-			EventEmitter<> close_event;
+			events::EventEmitter<std::string&> message_event;
+			events::EventEmitter<> close_event;
 
 			explicit Conn(tcp::socket&& socket) : ws(std::move(socket)) {}
 
@@ -154,12 +133,12 @@ namespace websocket_server
 	class Listener : public std::enable_shared_from_this<Listener>
 	{
 		private:
-			EventEmitter<Conn&>& conn_event;
+			events::EventEmitter<Conn&>& conn_event;
 			net::io_context& io_ctx;
 			tcp::acceptor acceptor;
 
 		public:
-			Listener(EventEmitter<Conn&>& conn_event,
+			Listener(events::EventEmitter<Conn&>& conn_event,
 				net::io_context& io_ctx, tcp::endpoint endpoint)
 					: io_ctx(io_ctx), acceptor(io_ctx), conn_event(conn_event)
 			{
@@ -246,7 +225,7 @@ namespace websocket_server
 			size_t thread_count;
 
 		public:
-			EventEmitter<Conn&> conn_event;
+			events::EventEmitter<Conn&> conn_event;
 
 			WebsocketServer(size_t thread_count) : thread_count(thread_count) {}
 
