@@ -1,222 +1,159 @@
 #include <bits/stdc++.h>
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/strand.hpp>
-#include <boost/asio/buffers_iterator.hpp>
-// #include <boost/asio/connect.hpp>
-// #include <boost/asio/ip/tcp.hpp>
-#include <cstdlib>
+
+#define DEBUG
+#include "websocket-server.hpp"
+#include "board.hpp"
 
 #define PORT 1337
+#define THREAD_COUNT 1 // std::thread::hardware_concurrency()
 
-namespace beast = boost::beast;
-namespace http = beast::http;
-namespace websocket = beast::websocket;
-namespace net = boost::asio;
-using tcp = boost::asio::ip::tcp;
+namespace ws_server = websocket_server;
 
-const int thread_count = std::thread::hardware_concurrency();
-
-class Session : public std::enable_shared_from_this<Session>
+bool starts_with(std::string str, std::string search)
 {
-	websocket::stream<beast::tcp_stream> ws;
-	beast::flat_buffer buffer;
+	if (search.size() > str.size()) return false;
 
-	public:
-		explicit Session(tcp::socket&& socket) : ws(std::move(socket)) {}
+	for (size_t i = 0; i < search.size(); i++)
+	{
+		if (str[i] != search[i]) return false;
+	}
 
-		void run()
-		{
-			net::dispatch(ws.get_executor(),
-				beast::bind_front_handler(&Session::on_run, shared_from_this()));
-		}
+	return true;
+}
 
-		void on_run()
-		{
-			// Set default timeout settings
-
-			ws.set_option(websocket::stream_base::timeout::suggested(
-				beast::role_type::server));
-
-			// Set custom server field
-
-			ws.set_option(websocket::stream_base::decorator(
-				[](websocket::response_type& res)
-				{
-					res.set(http::field::server, "MiniChess++ Server");
-				}));
-
-			// Accept the websocket handshake
-
-			ws.async_accept(beast::bind_front_handler(
-				&Session::on_accept, shared_from_this()));
-		}
-
-		void on_accept(beast::error_code err)
-		{
-			if (err)
-			{
-				fprintf(stderr, "error on accept: %s\n",
-					err.message().c_str());
-				return;
-			}
-
-			do_read();
-		}
-
-		void do_read()
-		{
-			// Read message into buffer
-
-			ws.async_read(buffer, beast::bind_front_handler(
-				&Session::on_read, shared_from_this()));
-		}
-
-		void on_read(beast::error_code err, size_t bytes_transferred)
-		{
-			boost::ignore_unused(bytes_transferred);
-
-			if (err == websocket::error::closed) return;
-
-			if (err)
-			{
-				fprintf(stderr, "error on read: %s\n",
-					err.message().c_str());
-			}
-
-			ws.text(true);
-
-			beast::flat_buffer send_buf;
-			std::string data = "Hello, World!";
-
-			size_t n = boost::asio::buffer_copy(send_buf.prepare(data.size()),
-				boost::asio::buffer(data));
-			send_buf.commit(n);
-
-			ws.async_write(send_buf.data(), beast::bind_front_handler(
-				&Session::on_write, shared_from_this()));
-		}
-
-		void on_write(beast::error_code err, size_t bytes_transferred)
-		{
-			boost::ignore_unused(bytes_transferred);
-
-			if (err)
-			{
-				fprintf(stderr, "error on write: %s\n",
-					err.message().c_str());
-				return;
-			}
-
-			buffer.consume(buffer.size());
-
-			do_read();
-		}
-};
-
-class Listener : public std::enable_shared_from_this<Listener>
+class Game
 {
 	private:
-		net::io_context& io_ctx;
-		tcp::acceptor acceptor;
+		chess::Board board;
 
 	public:
-		Listener(net::io_context& io_ctx, tcp::endpoint endpoint)
-			: io_ctx(io_ctx), acceptor(io_ctx)
+		ws_server::Conn *white = NULL;
+		ws_server::Conn *black = NULL;
+
+		void handle_move(ws_server::Conn& conn, uint8_t col_from,
+			uint8_t row_from, uint8_t col_to, uint8_t row_to)
 		{
-			beast::error_code err;
+			// Authenticate
 
-			// Open the acceptor
-
-			acceptor.open(endpoint.protocol(), err);
-
-			if (err)
+			if (&conn == white && board.turn == chess::Players::BLACK
+				|| &conn == black && board.turn == chess::Players::WHITE)
 			{
-				fprintf(stderr, "error opening endpoint: %s\n",
-					err.message().c_str());
+				conn.write("err: not your turn");
 				return;
 			}
 
-			// Allow address reuse
-
-			acceptor.set_option(net::socket_base::reuse_address(true), err);
-
-			if (err)
+			if (&conn != white && &conn != black)
 			{
-				fprintf(stderr, "error setting allow address reuse: %s\n",
-					err.message().c_str());
+				conn.write("err: not your board");
 				return;
 			}
 
-			// Bind to server address
-
-			acceptor.bind(endpoint, err);
-
-			if (err)
+			if (!board.is_legal_move(board.turn, col_from, row_from, col_to, row_to))
 			{
-				fprintf(stderr, "error binding to server address: %s\n",
-					err.message().c_str());
+				conn.write("err: illegal move");
 				return;
 			}
 
-			// Start listening for connections
-
-			acceptor.listen(net::socket_base::max_listen_connections, err);
-
-			if (err)
-			{
-				fprintf(stderr, "error listening: %s\n",
-					err.message().c_str());
-				return;
-			}
-		}
-
-		void run()
-		{
-			do_accept();
-		}
-
-	private:
-		void do_accept()
-		{
-			acceptor.async_accept(net::make_strand(io_ctx),
-				beast::bind_front_handler(&Listener::on_accept, shared_from_this()));
-		}
-
-		void on_accept(beast::error_code err, tcp::socket socket)
-		{
-			if (err)
-			{
-				fprintf(stderr, "error on accept: %s\n",
-					err.message().c_str());
-			}
-			else
-			{
-				std::make_shared<Session>(std::move(socket))->run();
-			}
-
-			do_accept();
+			board.move(chess::Square(col_from, row_from),
+				chess::Square(col_to, row_to));
+			conn.write("ok");
 		}
 };
 
 int main()
 {
-	net::ip::address addr = net::ip::make_address("0.0.0.0");
-	uint16_t port = PORT;
+	ws_server::WebsocketServer server(THREAD_COUNT);
+	std::unordered_map<std::string, Game> games;
 
-	net::io_context io_ctx(thread_count);
-	std::make_shared<Listener>(io_ctx, tcp::endpoint(addr, port))->run();
-
-	std::vector<std::thread> threads;
-
-	for (size_t i = 0; i < thread_count - 1; i++)
+	server.conn_event.add_listener([&games](ws_server::Conn& conn)
 	{
-		threads.emplace_back([&io_ctx]()
-		{
-			io_ctx.run();
-		});
-	}
+		printf("new conn\n");
 
-	io_ctx.run();
+		conn.message_event.add_listener([&games, &conn](std::string message)
+		{
+			printf("new message: %s\n", message.c_str());
+
+			if (starts_with(message, "create-room "))
+			{
+				std::string room_name = message.substr(12);
+
+				if (games.count(room_name))
+				{
+					conn.write("err: room already exists");
+					return;
+				}
+
+				games[room_name] = Game();
+				Game& game = games[room_name];
+				game.white = &conn;
+				conn.write("ok");
+				return;
+			}
+
+			if (starts_with(message, "join-room "))
+			{
+				std::string room_name = message.substr(10);
+
+				if (!games.count(room_name))
+				{
+					conn.write("err: oom does not exist");
+					return;
+				}
+
+				Game& game = games[room_name];
+
+				if (game.black != NULL)
+				{
+					conn.write("err: room is full");
+					return;
+				}
+
+				game.black = &conn;
+				conn.write("ok");
+				return;
+			}
+
+			if (starts_with(message, "move "))
+			{
+				if (message.size() < 10)
+				{
+					conn.write("err: invalid move arguments");
+					return;
+				}
+
+				// Expects "A1 B2"
+
+				uint8_t col_from = message[5] - 'A';
+				uint8_t row_from = message[6] - '1';
+
+				char space = message[7];
+
+				uint8_t col_to = message[8] - 'A';
+				uint8_t row_to = message[9] - '1';
+
+				if (col_from >= 8 || row_from >= 8 || col_to >= 8
+					|| row_to >= 8 || space != ' ')
+				{
+					conn.write("err: invalid input");
+					return;
+				}
+
+				std::string room_name = message.substr(11);
+
+				if (!games.count(room_name))
+				{
+					conn.write("err: room does not exist");
+					return;
+				}
+
+				Game& game = games[room_name];
+				game.handle_move(conn, col_from, row_from, col_to, row_to);
+				return;
+			}
+
+			conn.write("err: unknown command");
+		});
+	});
+
+	server.listen(PORT);
 }

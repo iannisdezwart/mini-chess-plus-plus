@@ -396,7 +396,7 @@ namespace chess
 					{
 						if (is_white(squares[row][col]))
 						{
-							std::vector<Square> moves = possible_moves(col, row, true, true);
+							std::vector<Square> moves = possible_moves(col, row, true);
 							if (moves.size()) return true;
 						}
 					}
@@ -413,7 +413,7 @@ namespace chess
 					{
 						if (is_black(squares[row][col]))
 						{
-							std::vector<Square> moves = possible_moves(col, row, true, true);
+							std::vector<Square> moves = possible_moves(col, row, true);
 							if (moves.size()) return true;
 						}
 					}
@@ -423,7 +423,7 @@ namespace chess
 			}
 
 			std::vector<Square> possible_moves(uint8_t x, uint8_t y,
-				bool check_check, bool in_check = false)
+				bool check_check)
 			{
 				std::vector<Square> moves;
 				if (x >= 8 || y >= 8) return moves;
@@ -1420,6 +1420,40 @@ namespace chess
 				unpretend(from, to, old_piece);
 
 				return !check;
+			}
+
+			bool is_legal_move(enum Players player, uint8_t x_from,
+				uint8_t y_from, uint8_t x_to, uint8_t y_to)
+			{
+				Square from(x_from, y_from);
+				Square to(x_to, y_to);
+
+				enum Pieces moved_piece = squares[y_from][x_from];
+
+				if (player == Players::WHITE && !is_white(moved_piece)
+					|| player == Players::BLACK && !is_black(moved_piece))
+				{
+					return false;
+				}
+
+				std::vector<Square> moves = possible_moves(x_from, y_from, true);
+
+				for (size_t i = 0; i < moves.size(); i++)
+				{
+					if (to.x == moves[i].x && to.y == moves[i].y)
+					{
+						if (is_legal(x_from, y_from, x_to, y_to))
+						{
+							return true;
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+
+				return false;
 			}
 
 			void move(Square from, Square to)
