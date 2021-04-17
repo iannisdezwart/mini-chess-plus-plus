@@ -18,27 +18,54 @@ void keypress_thread()
 	}
 }
 
+void create_room(WebsocketClient& ws_client)
+{
+	printf("Room name > ");
+	std::string room_name;
+	std::cin >> room_name;
+
+	ws_client.write("create-room " + room_name);
+
+	ws_client.message_event.add_listener([&ws_client](std::string& message) {
+		if (message == "ok")
+		{
+			printf("successfully joined room\n");
+		}
+		else
+		{
+			printf("error joining room\n");
+		}
+
+		ws_client.close();
+	});
+
+	// ws_client.do_read();
+}
+
 int main()
 {
-	printf("1. Create room (play as white)\n");
-	printf("2. Join room (play as black)\n");
-	try_again:
-	printf("> ");
-
-	uint8_t choice;
-	std::cin >> choice;
-
-	switch (choice)
+	WebsocketClient ws_client("localhost", 1337, [&ws_client]()
 	{
-		case 1:
-			create_room(); // Todo: make
-			break;
+		printf("1. Create room (play as white)\n");
+		printf("2. Join room (play as black)\n");
+		try_again:
+		printf("> ");
 
-		case 2:
-			join_room(); // Todo: make
-			break;
+		char choice;
+		std::cin >> choice;
 
-		default:
-			goto try_again;
-	}
+		switch (choice)
+		{
+			case '1':
+				create_room(ws_client);
+				break;
+
+			case '2':
+				// join_room();
+				break;
+
+			default:
+				goto try_again;
+		}
+	});
 }
