@@ -100,7 +100,7 @@ namespace websocket_server
 				read_buf.consume(read_buf.size());
 			}
 
-			void write(std::string message)
+			void write(const std::string& message)
 			{
 				ws.text(true);
 
