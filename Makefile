@@ -9,9 +9,9 @@ server: server.cpp
 	$(CXX) server.cpp -o server -pthread
 
 clean-client:
-	rm client
+	rm -f client
 
 clean-server:
-	rm server
+	rm -f server
 
 clean: clean-client clean-server
