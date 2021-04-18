@@ -21,6 +21,11 @@ class Game
 		ws_server::Conn *white = NULL;
 		ws_server::Conn *black = NULL;
 
+		Game()
+		{
+			board.initialise_standard();
+		}
+
 		void handle_move(ws_server::Conn& conn,
 			chess::Square from, chess::Square to)
 		{
@@ -50,6 +55,11 @@ class Game
 
 			if (white != NULL) white->write(message);
 			if (black != NULL) black->write(message);
+		}
+
+		std::string to_str() const
+		{
+			return board.to_str();
 		}
 };
 
@@ -124,6 +134,38 @@ int main()
 					conn.write(err);
 					return;
 				}
+			}
+
+			if (util::starts_with(message, "chat "))
+			{
+				// Todo: implement
+			}
+
+			if (util::starts_with(message, "fetch-board-state "))
+			{
+				try
+				{
+					std::string room_name =
+						ws_messages::fetch_board_state::decode_client_message(message);
+
+					if (!games.count(room_name))
+					{
+						conn.write(ws_messages::fetch_board_state::err_room_does_not_exist);
+						return;
+					}
+
+					const Game& game = games[room_name];
+					std::string board_str = game.to_str();
+
+					conn.write(ws_messages::fetch_board_state
+						::create_server_message(board_str));
+				}
+				catch (std::string err)
+				{
+					conn.write(err);
+				}
+
+				return;
 			}
 
 			conn.write(ws_messages::general::err_unknown_command);

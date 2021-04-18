@@ -3,6 +3,7 @@
 
 #include <bits/stdc++.h>
 #include "board.hpp"
+#include "util.hpp"
 
 namespace ws_messages
 {
@@ -120,10 +121,54 @@ namespace ws_messages
 		std::string err_room_is_full = "err: room is full";
 	};
 
+	namespace fetch_board_state
+	{
+		std::string err_room_does_not_exist = "err: room does not exist";
+		std::string err_invalid_arguments = "err: invalid arguments";
+
+		std::string create_client_message(const std::string& room_name)
+		{
+			std::string message = "fetch-board-state " + room_name;
+			return message;
+		}
+
+		std::string create_server_message(const std::string& board)
+		{
+			std::string message = "ok " + board;
+			return message;
+		}
+
+		std::string decode_client_message(const std::string& message)
+		{
+			if (message.size() < 19)
+			{
+				throw err_invalid_arguments;
+			}
+
+			return message.substr(18);
+		}
+
+		std::string decode_server_message(const std::string& message)
+		{
+			if (message.size() != 67)
+			{
+				debug("size of message = %lu, message = %s", message.size(), message.c_str());
+				throw err_invalid_arguments;
+			}
+
+			return message.substr(3);
+		}
+	};
+
 	namespace general
 	{
 		std::string err_unknown_command = "err: unknown command";
 		std::string ok_message = "ok";
+
+		bool is_err(std::string message)
+		{
+			return util::starts_with(message, "err:");
+		}
 	};
 };
 
