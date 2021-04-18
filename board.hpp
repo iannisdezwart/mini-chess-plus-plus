@@ -330,9 +330,9 @@ namespace chess
 
 				printf("\n   ");
 
-				for (uint8_t i = 0; i < 8; i++)
+				for (uint8_t i = 8; i != 0; i--)
 				{
-					printf("%c ", 'A' + i);
+					printf("%c ", 'A' + i - 1);
 				}
 
 				printf("\n");
