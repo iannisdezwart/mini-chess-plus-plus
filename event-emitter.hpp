@@ -13,7 +13,7 @@ namespace events
 			callback_t callback = NULL;
 
 		public:
-			void add_listener(callback_t&& callback)
+			void set_listener(callback_t&& callback)
 			{
 				this->callback = std::move(callback);
 			}
