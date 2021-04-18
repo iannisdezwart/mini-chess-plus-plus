@@ -48,6 +48,82 @@ namespace chess
 		UNOCCUPIED
 	};
 
+	char piece_to_char(enum Pieces piece)
+	{
+		switch (piece)
+		{
+			case Pieces::WHITE_KING:
+				return 'K';
+			case Pieces::WHITE_QUEEN:
+				return 'Q';
+			case Pieces::WHITE_ROOK:
+				return 'R';
+			case Pieces::WHITE_KNIGHT:
+				return 'N';
+			case Pieces::WHITE_BISHOP:
+				return 'B';
+			case Pieces::WHITE_PAWN:
+				return 'P';
+
+			case Pieces::BLACK_KING:
+				return 'k';
+			case Pieces::BLACK_QUEEN:
+				return 'q';
+			case Pieces::BLACK_ROOK:
+				return 'r';
+			case Pieces::BLACK_KNIGHT:
+				return 'n';
+			case Pieces::BLACK_BISHOP:
+				return 'b';
+			case Pieces::BLACK_PAWN:
+				return 'p';
+
+			case Pieces::UNOCCUPIED:
+				return ' ';
+
+			default:
+				return '?';
+		};
+	}
+
+	enum Pieces char_to_piece(char piece)
+	{
+		switch (piece)
+		{
+			case 'K':
+				return Pieces::WHITE_KING;
+			case 'Q':
+				return Pieces::WHITE_QUEEN;
+			case 'R':
+				return Pieces::WHITE_ROOK;
+			case 'N':
+				return Pieces::WHITE_KNIGHT;
+			case 'B':
+				return Pieces::WHITE_BISHOP;
+			case 'P':
+				return Pieces::WHITE_PAWN;
+
+			case 'k':
+				return Pieces::BLACK_KING;
+			case 'q':
+				return Pieces::BLACK_QUEEN;
+			case 'r':
+				return Pieces::BLACK_ROOK;
+			case 'n':
+				return Pieces::BLACK_KNIGHT;
+			case 'b':
+				return Pieces::BLACK_BISHOP;
+			case 'p':
+				return Pieces::BLACK_PAWN;
+
+			case ' ':
+				return Pieces::UNOCCUPIED;
+
+			default:
+				return Pieces::UNOCCUPIED;
+		}
+	}
+
 	enum class Players : uint8_t
 	{
 		WHITE,
@@ -143,7 +219,20 @@ namespace chess
 			Square white_king;
 			Square black_king;
 
-			Board() : turn(Players::WHITE), white_king(-1, -1), black_king(-1, -1)
+			Board() : turn(Players::WHITE), white_king(-1, -1), black_king(-1, -1) {}
+
+			void initialise_blank()
+			{
+				for (uint8_t row = 0; row < 8; row++)
+				{
+					for (uint8_t col = 0; col < 8; col++)
+					{
+						squares[row][col] = Pieces::UNOCCUPIED;
+					}
+				}
+			}
+
+			void initialise_standard()
 			{
 				squares[0][0] = Pieces::WHITE_ROOK;
 				squares[0][1] = Pieces::WHITE_KNIGHT;
@@ -1657,6 +1746,22 @@ namespace chess
 
 				if (turn == Players::WHITE) turn = Players::BLACK;
 				else turn = Players::WHITE;
+			}
+
+			std::string to_str() const
+			{
+				std::string str;
+
+				for (size_t y = 0; y < 8; y++)
+				{
+					for (size_t x = 0; x < 8; x++)
+					{
+						enum Pieces piece = squares[y][x];
+						str += piece_to_char(piece);
+					}
+				}
+
+				return str;
 			}
 	};
 };
