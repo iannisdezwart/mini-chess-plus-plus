@@ -1,3 +1,4 @@
++ fix segfault in client
 + add time
 + add score
 + premoves
