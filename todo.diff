@@ -1,0 +1,5 @@
++ add time
++ add score
++ premoves
++ fix pawn promotion
++ add a get-board-state ws message
