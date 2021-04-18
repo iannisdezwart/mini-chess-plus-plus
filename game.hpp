@@ -11,9 +11,8 @@ namespace chess
 	class Game
 	{
 		private:
+			bool started;
 			enum Players player;
-			WebsocketClient& ws_client;
-			std::string room_name;
 			Board board;
 			Square cursor;
 			Square sel;
@@ -25,15 +24,24 @@ namespace chess
 			std::thread keypress_thread;
 
 		public:
+			WebsocketClient& ws_client;
+			std::string room_name;
+
 			Game(enum Players player, WebsocketClient& ws_client,
 				std::string&& room_name)
-					: player(player), ws_client(ws_client),
+					: started(false), player(player), ws_client(ws_client),
 						room_name(std::move(room_name)), cursor(3, 3), sel(-1, -1),
 						prev_move_from({ -1, -1 }), prev_move_to({ -1, -1 }),
 						upsd(player == Players::BLACK),
 						keypress_thread(std::bind(&Game::keypress_handler, this))
 			{
+				board.initialise_blank();
 				print(true);
+			}
+
+			void start()
+			{
+				started = true;
 			}
 
 			void print(bool new_move)
@@ -66,7 +74,7 @@ namespace chess
 
 				if (new_move)
 				{
-					if (board.turn == Players::WHITE && !board.white_can_move())
+					if (board.turn == Players::WHITE && !board.white_can_move() && started)
 					{
 						if (board.white_in_check())
 						{
@@ -80,7 +88,7 @@ namespace chess
 						}
 					}
 
-					if (board.turn == Players::BLACK && !board.black_can_move())
+					if (board.turn == Players::BLACK && !board.black_can_move() && started)
 					{
 						if (board.black_in_check())
 						{
@@ -240,6 +248,26 @@ namespace chess
 				prev_move_to = to;
 
 				print(true);
+			}
+
+			void load_from_str(const std::string& str)
+			{
+				uint8_t x = 0;
+				uint8_t y = 0;
+
+				for (size_t i = 0; i < str.size(); i++)
+				{
+					enum Pieces piece = char_to_piece(str[i]);
+					board.squares[y][x] = piece;
+
+					x++;
+
+					if (x == 8)
+					{
+						x = 0;
+						y++;
+					}
+				}
 			}
 	};
 };
