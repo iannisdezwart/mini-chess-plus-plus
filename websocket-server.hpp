@@ -24,6 +24,7 @@ namespace websocket_server
 		private:
 			websocket::stream<beast::tcp_stream> ws;
 			beast::flat_buffer read_buf;
+			bool is_reading = false;
 
 		public:
 			events::EventEmitter<std::string&> message_event;
@@ -72,15 +73,21 @@ namespace websocket_server
 
 			void do_read()
 			{
-				// Read message into buffer
+				if (!is_reading)
+				{
+					// Read message into buffer
 
-				ws.async_read(read_buf, beast::bind_front_handler(
-					&Conn::on_read, shared_from_this()));
+					is_reading = true;
+
+					ws.async_read(read_buf, beast::bind_front_handler(
+						&Conn::on_read, shared_from_this()));
+				}
 			}
 
 			void on_read(beast::error_code err, size_t bytes_transferred)
 			{
 				boost::ignore_unused(bytes_transferred);
+				is_reading = false;
 
 				if (err == websocket::error::closed)
 				{
@@ -95,6 +102,7 @@ namespace websocket_server
 				}
 
 				std::string message(beast::buffers_to_string(read_buf.data()));
+				debug("< %s", message.c_str());
 				message_event.trigger(message);
 
 				read_buf.consume(read_buf.size());
@@ -102,6 +110,8 @@ namespace websocket_server
 
 			void write(const std::string& message)
 			{
+				debug("> %s", message.c_str());
+
 				ws.text(true);
 
 				beast::flat_buffer send_buf;
@@ -213,6 +223,7 @@ namespace websocket_server
 					std::shared_ptr<Conn> conn = std::make_shared<Conn>(std::move(socket));
 					conn->run();
 					conn_event.trigger(*conn);
+					debug("new conn");
 				}
 
 				do_accept();

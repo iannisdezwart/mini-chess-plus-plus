@@ -85,12 +85,15 @@ class Conn : public std::enable_shared_from_this<Conn>
 			}
 
 			std::string message(beast::buffers_to_string(read_buf.data()));
+			debug("< %s", message.c_str());
 			message_event.trigger(message);
 			read_buf.consume(read_buf.size());
 		}
 
 		void write(const std::string& message)
 		{
+			debug("> %s", message.c_str());
+
 			ws.text(true);
 
 			beast::flat_buffer send_buf;
@@ -112,8 +115,6 @@ class Conn : public std::enable_shared_from_this<Conn>
 					err.message().c_str());
 				return;
 			}
-
-			do_read();
 		}
 
 		void close(websocket::close_code close_code = websocket::close_code::normal)

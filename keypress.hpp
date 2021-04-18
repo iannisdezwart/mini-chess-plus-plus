@@ -4,7 +4,6 @@
 #include <bits/stdc++.h>
 #include <termios.h>
 #include <unistd.h>
-
 #include "debug.hpp"
 
 // Todo: port this to mac os and windows
