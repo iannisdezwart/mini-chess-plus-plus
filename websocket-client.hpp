@@ -7,7 +7,6 @@
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <cstdlib>
-#include "event-emitter.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -18,17 +17,17 @@ using tcp = boost::asio::ip::tcp;
 class Conn : public std::enable_shared_from_this<Conn>
 {
 	private:
-		events::EventEmitter<std::string&>& message_event;
 		tcp::resolver resolver;
 		websocket::stream<tcp::socket> ws;
 		beast::multi_buffer read_buf;
 		std::string host;
 		std::function<void()> conn_callback;
+		std::function<void(std::string&)> read_callback;
 
 	public:
-		explicit Conn(events::EventEmitter<std::string&>& message_event,
-			std::function<void()>&& conn_callback, net::io_context& io_ctx)
-				: message_event(message_event), resolver(io_ctx), ws(io_ctx),
+		explicit Conn(std::function<void()>&& conn_callback,
+			net::io_context& io_ctx)
+				: resolver(io_ctx), ws(io_ctx),
 					conn_callback(std::move(conn_callback)) {}
 
 		void run(std::string host, std::string port)
@@ -65,8 +64,10 @@ class Conn : public std::enable_shared_from_this<Conn>
 			ws.async_handshake(host, "/", std::bind(conn_callback));
 		}
 
-		void do_read()
+		void read(const std::function<void(std::string&)>& callback)
 		{
+			read_callback = callback;
+
 			// Read a message into our buffer
 
 			ws.async_read(read_buf, std::bind(&Conn::on_read,
@@ -86,7 +87,7 @@ class Conn : public std::enable_shared_from_this<Conn>
 
 			std::string message(beast::buffers_to_string(read_buf.data()));
 			debug("< %s", message.c_str());
-			message_event.trigger(message);
+			read_callback(message);
 			read_buf.consume(read_buf.size());
 		}
 
@@ -129,13 +130,11 @@ class WebsocketClient
 		std::shared_ptr<Conn> conn;
 
 	public:
-		events::EventEmitter<std::string&> message_event;
-
 		WebsocketClient(std::string host, uint16_t port,
 			std::function<void()>&& conn_callback)
 		{
 			net::io_context io_ctx;
-			conn = std::make_shared<Conn>(message_event, std::move(conn_callback), io_ctx);
+			conn = std::make_shared<Conn>(std::move(conn_callback), io_ctx);
 			conn->run(host, std::to_string(port));
 			io_ctx.run();
 		}
@@ -145,9 +144,9 @@ class WebsocketClient
 			conn->write(message);
 		}
 
-		void do_read()
+		void read(const std::function<void(std::string&)>& callback)
 		{
-			conn->do_read();
+			conn->read(callback);
 		}
 
 		void close(websocket::close_code close_code = websocket::close_code::normal)
