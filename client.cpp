@@ -10,7 +10,10 @@
 #include "util.hpp"
 #include "ws_messages.hpp"
 
-void game(WebsocketClient& ws_client, std::string&& room_name,
+#define HOST "86.91.151.176"
+#define PORT 1337
+
+void start_game(WebsocketClient& ws_client, std::string&& room_name,
 	enum chess::Players player)
 {
 	chess::Game *game = new chess::Game(player, ws_client, std::move(room_name));
@@ -19,24 +22,23 @@ void game(WebsocketClient& ws_client, std::string&& room_name,
 	{
 		if (util::starts_with(message, "move "))
 		{
-			if (message.size() < 10)
-			{
-				debug("invalid length in server move message");
-				goto read_next;
-			}
-
 			try
 			{
 				ws_messages::move::Move move = ws_messages::move::decode_message(message);
 
 				game->move(move.from, move.to);
-				goto read_next;
 			}
 			catch (...)
 			{
 				debug("invalid server move message");
-				goto read_next;
 			}
+
+			goto read_next;
+		}
+
+		if (util::starts_with(message, "chat "))
+		{
+			// Todo: implement
 		}
 
 		read_next:
@@ -57,7 +59,7 @@ void create_room(WebsocketClient& ws_client)
 	{
 		if (message == ws_messages::general::ok_message)
 		{
-			game(ws_client, std::move(room_name), chess::Players::WHITE);
+			start_game(ws_client, std::move(room_name), chess::Players::WHITE);
 		}
 		else
 		{
@@ -80,7 +82,7 @@ void join_room(WebsocketClient& ws_client)
 	{
 		if (message == ws_messages::general::ok_message)
 		{
-			game(ws_client, std::move(room_name), chess::Players::BLACK);
+			start_game(ws_client, std::move(room_name), chess::Players::BLACK);
 		}
 		else
 		{
@@ -94,7 +96,7 @@ void join_room(WebsocketClient& ws_client)
 
 int main()
 {
-	WebsocketClient ws_client("localhost", 1337, [&ws_client]()
+	WebsocketClient ws_client(HOST, PORT, [&ws_client]()
 	{
 		printf("1. Create room (play as white)\n");
 		printf("2. Join room (play as black)\n");
