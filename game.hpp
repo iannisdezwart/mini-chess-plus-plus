@@ -17,6 +17,8 @@ namespace chess
 			Board board;
 			Square cursor;
 			Square sel;
+			Square prev_move_from;
+			Square prev_move_to;
 			std::vector<Square> moves;
 			std::vector<Square> warn;
 			bool upsd;
@@ -27,6 +29,7 @@ namespace chess
 				std::string&& room_name)
 					: player(player), ws_client(ws_client),
 						room_name(std::move(room_name)), cursor(3, 3), sel(-1, -1),
+						prev_move_from({ -1, -1 }), prev_move_to({ -1, -1 }),
 						upsd(player == Players::BLACK),
 						keypress_thread(std::bind(&Game::keypress_handler, this))
 			{
@@ -54,11 +57,11 @@ namespace chess
 
 				if (upsd)
 				{
-					board.print_upsd(cursor, sel, moves, warn);
+					board.print_upsd(cursor, sel, prev_move_from, prev_move_to, moves, warn);
 				}
 				else
 				{
-					board.print(cursor, sel, moves, warn);
+					board.print(cursor, sel, prev_move_from, prev_move_to, moves, warn);
 				}
 
 				if (new_move)
@@ -209,6 +212,16 @@ namespace chess
 							sel = Square(-1, -1);
 							break;
 
+						case '>':
+						{
+							printf("chat > ");
+							std::string msg;
+							std::getline(std::cin, msg);
+
+							ws_client.write("chat " + msg);
+							break;
+						}
+
 						default:
 							continue;
 					}
@@ -222,6 +235,10 @@ namespace chess
 			void move(Square from, Square to)
 			{
 				board.move(from, to);
+
+				prev_move_from = from;
+				prev_move_to = to;
+
 				print(true);
 			}
 	};

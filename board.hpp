@@ -8,6 +8,8 @@
 #define SEL_SQUARE "\e[48;2;120;120;255m"
 #define WARN_SQUARE "\e[48;2;255;120;120m"
 #define CURSOR_SQUARE "\e[48;2;255;120;255m"
+#define PREV_MOVE_FROM_SQUARE "\e[48;2;120;120;160m"
+#define PREV_MOVE_TO_SQUARE "\e[48;2;90;90;255m"
 #define HIGHL_COLOUR "\e[38;2;120;255;120m"
 #define HIGHL_CHAR "*"
 #define BLACK_PIECE "\e[38;2;0;0;0m"
@@ -189,6 +191,8 @@ namespace chess
 			}
 
 			void print(Square cursor, Square sel = { 8, 8 },
+				Square prev_move_from = { -1, -1 },
+				Square prev_move_to = { -1, -1 },
 				std::vector<Square> highl = std::vector<Square>(),
 				std::vector<Square> warn = std::vector<Square>())
 			{
@@ -205,6 +209,18 @@ namespace chess
 						else
 						{
 							printf(BLACK_SQUARE);
+						}
+
+						// Prev move squares
+
+						if (prev_move_from.x == col && prev_move_from.y == row - 1)
+						{
+							printf(PREV_MOVE_FROM_SQUARE);
+						}
+
+						if (prev_move_to.x == col && prev_move_to.y == row - 1)
+						{
+							printf(PREV_MOVE_TO_SQUARE);
 						}
 
 						// Selected square
@@ -264,6 +280,8 @@ namespace chess
 			}
 
 			void print_upsd(Square cursor, Square sel = { 8, 8 },
+				Square prev_move_from = { -1, -1 },
+				Square prev_move_to = { -1, -1 },
 				std::vector<Square> highl = std::vector<Square>(),
 				std::vector<Square> warn = std::vector<Square>())
 			{
@@ -280,6 +298,18 @@ namespace chess
 						else
 						{
 							printf(BLACK_SQUARE);
+						}
+
+						// Prev move squares
+
+						if (prev_move_from.x == col && prev_move_from.y == row - 1)
+						{
+							printf(PREV_MOVE_FROM_SQUARE);
+						}
+
+						if (prev_move_to.x == col && prev_move_to.y == row - 1)
+						{
+							printf(PREV_MOVE_TO_SQUARE);
 						}
 
 						// Selected square
