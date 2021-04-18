@@ -3,3 +3,5 @@ server
 client
 .vscode
 stderr
+keypress-test
+keypress-test.cpp
