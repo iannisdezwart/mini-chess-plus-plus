@@ -203,6 +203,16 @@ namespace ws_messages
 		}
 	};
 
+	namespace connect
+	{
+		std::string opponent_connected = "opponent-connected";
+	};
+
+	namespace disconnect
+	{
+		std::string opponent_disconnected = "opponent-disconnected";
+	};
+
 	namespace general
 	{
 		std::string err_unknown_command = "err: unknown command";
