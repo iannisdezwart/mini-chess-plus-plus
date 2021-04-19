@@ -65,6 +65,23 @@ void on_message_receive(chess::ClientGame *game, std::string& message)
 	if (util::starts_with(message, "chat "))
 	{
 		// Todo: implement
+
+		goto read_next;
+	}
+
+	if (message == ws_messages::connect::opponent_connected)
+	{
+		printf("Opponent connected!\n");
+
+		goto read_next;
+	}
+
+	if (message == ws_messages::disconnect::opponent_disconnected)
+	{
+		game->end();
+		printf("Opponent disconnected, you win!\n");
+
+		goto read_next;
 	}
 
 	read_next:
