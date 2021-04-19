@@ -13,6 +13,7 @@ namespace chess
 	{
 		private:
 			bool started;
+			bool ended;
 			enum Players player;
 			Board board;
 			Square cursor;
@@ -30,12 +31,13 @@ namespace chess
 
 			Game(enum Players player, WebsocketClient& ws_client,
 				std::string&& room_name)
-					: started(false), player(player), ws_client(ws_client),
+					: started(false), ended(false), player(player), ws_client(ws_client),
 						room_name(std::move(room_name)), cursor(3, 3), sel(-1, -1),
 						prev_move_from({ -1, -1 }), prev_move_to({ -1, -1 }),
-						upsd(player == Players::BLACK),
-						keypress_thread(std::bind(&Game::keypress_handler, this))
+						upsd(player == Players::BLACK)
 			{
+				keypress::start_getch_mode();
+				keypress_thread = std::thread(std::bind(&Game::keypress_handler, this));
 				board.initialise_blank();
 				print(true);
 			}
@@ -107,14 +109,38 @@ namespace chess
 
 			void end()
 			{
-				keypress_thread.detach();
+				ended = true;
+				keypress_thread.join();
+				keypress::stop_getch_mode();
+			}
+
+			bool finished()
+			{
+				return ended;
 			}
 
 			void keypress_handler()
 			{
+				bool stop_flag = false;
+
 				while (true)
 				{
-					uint8_t key = keypress::get_key();
+					uint8_t key = keypress::get_key([&stop_flag, this]()
+					{
+						if (finished())
+						{
+							stop_flag = true;
+							return false;
+						}
+
+						return true;
+					});
+
+					if (stop_flag)
+					{
+						debug("stopped keypress handler");
+						break;
+					}
 
 					switch (key)
 					{

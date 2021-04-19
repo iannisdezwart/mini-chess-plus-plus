@@ -2,7 +2,6 @@
 
 #define DEBUG
 
-#include "keypress.hpp"
 #include "board.hpp"
 #include "game.hpp"
 #include "event-emitter.hpp"
@@ -12,6 +11,8 @@
 
 #define HOST "86.91.151.176"
 #define PORT 1337
+
+void show_main_menu(WebsocketClient& ws_client);
 
 void fetch_board_state(chess::Game *game, const std::function<void()>& callback)
 {
@@ -68,8 +69,19 @@ void on_message_receive(chess::Game *game, std::string& message)
 
 	read_next:
 
-	game->ws_client.read(std::bind(&on_message_receive,
-		game, std::placeholders::_1));
+	if (game->finished())
+	{
+		// idk if this will work
+
+		WebsocketClient& ws_client = game->ws_client;
+		delete game;
+		show_main_menu(ws_client);
+	}
+	else
+	{
+		game->ws_client.read(std::bind(&on_message_receive,
+			game, std::placeholders::_1));
+	}
 }
 
 void start_game(WebsocketClient& ws_client, std::string&& room_name,
@@ -128,30 +140,39 @@ void join_room(WebsocketClient& ws_client)
 	});
 }
 
+void show_main_menu(WebsocketClient& ws_client)
+{
+	printf("1. Create room (play as white)\n");
+	printf("2. Join room (play as black)\n");
+	printf("3. Exit MiniChess++\n");
+	try_again:
+	printf("> ");
+
+	char choice;
+	std::cin >> choice;
+
+	switch (choice)
+	{
+		case '1':
+			create_room(ws_client);
+			break;
+
+		case '2':
+			join_room(ws_client);
+			break;
+
+		case '3':
+			exit(0);
+
+		default:
+			goto try_again;
+	}
+}
+
 int main()
 {
 	WebsocketClient ws_client(HOST, PORT, [&ws_client]()
 	{
-		printf("1. Create room (play as white)\n");
-		printf("2. Join room (play as black)\n");
-		try_again:
-		printf("> ");
-
-		char choice;
-		std::cin >> choice;
-
-		switch (choice)
-		{
-			case '1':
-				create_room(ws_client);
-				break;
-
-			case '2':
-				join_room(ws_client);
-				break;
-
-			default:
-				goto try_again;
-		}
+		show_main_menu(ws_client);
 	});
 }
