@@ -541,6 +541,23 @@ namespace chess
 				return false;
 			}
 
+			bool ended()
+			{
+				if (turn == Players::WHITE && !white_can_move())
+				{
+					return true;
+				}
+
+				if (turn == Players::BLACK && !black_can_move())
+				{
+					return true;
+				}
+
+				// Todo: figure out who won and update score
+
+				return false;
+			}
+
 			std::vector<Square> possible_moves(uint8_t x, uint8_t y,
 				bool check_check)
 			{
