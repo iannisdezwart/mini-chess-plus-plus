@@ -5,6 +5,7 @@
 #include "board.hpp"
 #include "keypress.hpp"
 #include "websocket-client.hpp"
+#include "ws_messages.hpp"
 
 namespace chess
 {
@@ -178,16 +179,51 @@ namespace chess
 							{
 								if (cursor.x == moves[i].x && cursor.y == moves[i].y)
 								{
-									// Move the piece to the selected square
+									char promotion = '\0';
 
-									std::string message = "move XX XX " + room_name;
+									if (board.squares[sel.y][sel.x] == Pieces::WHITE_PAWN
+										&& cursor.y == 7
+										|| board.squares[sel.y][sel.x] == Pieces::BLACK_PAWN
+										&& cursor.y == 0)
+									{
+										printf("select promotion:\n");
+										printf("1: " BISHOP ", ");
+										printf("2: " KNIGHT ", ");
+										printf("3: " ROOK ", ");
+										printf("4: " QUEEN "\n");
+										try_again:
+										printf("> ");
 
-									message[5] = 'A' + sel.x;
-									message[6] = '1' + sel.y;
-									message[8] = 'A' + cursor.x;
-									message[9] = '1' + cursor.y;
+										char choice;
+										std::cin >> choice;
 
-									ws_client.write(message);
+										switch (choice)
+										{
+											case '1':
+												promotion = 'B';
+												break;
+
+											case '2':
+												promotion = 'N';
+												break;
+
+											case '3':
+												promotion = 'R';
+												break;
+
+											case '4':
+												promotion = 'Q';
+												break;
+
+											default:
+												goto try_again;
+										}
+									}
+
+									ws_client.write(ws_messages::move
+										::create_message_with_room_name(
+											Square(sel.x, sel.y), Square(cursor.x, cursor.y),
+											room_name, promotion));
 
 									moves.clear();
 									sel = Square(-1, -1);
@@ -240,9 +276,9 @@ namespace chess
 				}
 			}
 
-			void move(Square from, Square to)
+			void move(Square from, Square to, char promotion = '\0')
 			{
-				board.move(from, to);
+				board.move(from, to, promotion);
 
 				prev_move_from = from;
 				prev_move_to = to;

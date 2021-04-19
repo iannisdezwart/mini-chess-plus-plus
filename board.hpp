@@ -1575,7 +1575,7 @@ namespace chess
 				return false;
 			}
 
-			void move(Square from, Square to)
+			void move(Square from, Square to, char promotion = '\0')
 			{
 				enum Pieces moved_piece = squares[from.y][from.x];
 				squares[from.y][from.x] = Pieces::UNOCCUPIED;
@@ -1674,73 +1674,45 @@ namespace chess
 
 				if (moved_piece == Pieces::WHITE_PAWN && to.y == 7)
 				{
-					printf("select promotion:\n");
-					printf("1: " BISHOP ", ");
-					printf("2: " KNIGHT ", ");
-					printf("3: " ROOK ", ");
-					printf("4: " QUEEN "\n");
-					try_again:
-					printf("> ");
-
-					char choice;
-					std::cin >> choice;
-
-					switch (choice)
+					switch (promotion)
 					{
-						case '1':
+						case 'B':
 							squares[to.y][to.x] = Pieces::WHITE_BISHOP;
 							break;
 
-						case '2':
+						case 'N':
 							squares[to.y][to.x] = Pieces::WHITE_KNIGHT;
 							break;
 
-						case '3':
+						case 'R':
 							squares[to.y][to.x] = Pieces::WHITE_ROOK;
 							break;
 
-						case '4':
+						case 'Q':
 							squares[to.y][to.x] = Pieces::WHITE_QUEEN;
 							break;
-
-						default:
-							goto try_again;
 					}
 				}
 
 				if (moved_piece == Pieces::BLACK_PAWN && to.y == 0)
 				{
-					printf("select promotion:\n");
-					printf("1: " BISHOP ", ");
-					printf("2: " KNIGHT ", ");
-					printf("3: " ROOK ", ");
-					printf("4: " QUEEN "\n");
-					try_again_1:
-					printf("> ");
-
-					char choice;
-					std::cin >> choice;
-
-					switch (choice)
+					switch (promotion)
 					{
-						case '1':
+						case 'B':
 							squares[to.y][to.x] = Pieces::BLACK_BISHOP;
 							break;
 
-						case '2':
+						case 'N':
 							squares[to.y][to.x] = Pieces::BLACK_KNIGHT;
 							break;
 
-						case '3':
+						case 'R':
 							squares[to.y][to.x] = Pieces::BLACK_ROOK;
 							break;
 
-						case '4':
+						case 'Q':
 							squares[to.y][to.x] = Pieces::BLACK_QUEEN;
 							break;
-
-						default:
-							goto try_again_1;
 					}
 				}
 

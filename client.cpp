@@ -51,7 +51,7 @@ void on_message_receive(chess::Game *game, std::string& message)
 			ws_messages::move::Move move =
 				ws_messages::move::decode_message(message);
 
-			game->move(move.from, move.to);
+			game->move(move.from, move.to, move.promotion);
 		}
 		catch (...)
 		{

@@ -27,7 +27,7 @@ class Game
 		}
 
 		void handle_move(ws_server::Conn& conn,
-			chess::Square from, chess::Square to)
+			chess::Square from, chess::Square to, char promotion)
 		{
 			// Authenticate
 
@@ -50,8 +50,10 @@ class Game
 				return;
 			}
 
-			board.move(from, to);
-			std::string message = ws_messages::move::create_message(from, to);
+			board.move(from, to, promotion);
+
+			std::string message = ws_messages::move::create_message(
+				from, to, promotion);
 
 			if (white != NULL) white->write(message);
 			if (black != NULL) black->write(message);
@@ -126,7 +128,7 @@ int main()
 					}
 
 					Game& game = games[move.room_name];
-					game.handle_move(conn, move.from, move.to);
+					game.handle_move(conn, move.from, move.to, move.promotion);
 					return;
 				}
 				catch (std::string err)

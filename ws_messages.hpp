@@ -15,7 +15,8 @@ namespace ws_messages
 		std::string err_not_your_board = "err: not your board";
 		std::string err_illegal_move = "err: illegal move";
 
-		std::string create_message(chess::Square from, chess::Square to)
+		std::string create_message(chess::Square from, chess::Square to,
+			char promotion = '\0')
 		{
 			std::string message = "move XX XX";
 
@@ -24,13 +25,33 @@ namespace ws_messages
 			message[8] = 'A' + to.x;
 			message[9] = '1' + to.y;
 
+			switch (promotion)
+			{
+				case 'B':
+					message += "=B";
+					break;
+
+				case 'N':
+					message += "=N";
+					break;
+
+				case 'R':
+					message += "=R";
+					break;
+
+				case 'Q':
+					message += "=Q";
+					break;
+			}
+
 			return message;
 		}
 
 		std::string create_message_with_room_name(chess::Square from,
-			chess::Square to, const std::string& room_name)
+			chess::Square to, const std::string& room_name,
+			char promotion = '\0')
 		{
-			std::string message = create_message(from, to);
+			std::string message = create_message(from, to, promotion);
 			message += " " + room_name;
 			return message;
 		}
@@ -39,9 +60,11 @@ namespace ws_messages
 		{
 			chess::Square from;
 			chess::Square to;
+			char promotion;
 
-			Move(uint8_t x_from, uint8_t y_from, uint8_t x_to, uint8_t y_to)
-				: from(x_from, y_from), to(x_to, y_to) {}
+			Move(uint8_t x_from, uint8_t y_from, uint8_t x_to, uint8_t y_to,
+				char promotion = '\0')
+					: from(x_from, y_from), to(x_to, y_to), promotion(promotion) {}
 		};
 
 		Move decode_message(const std::string& message)
@@ -66,7 +89,15 @@ namespace ws_messages
 				throw err_invalid_arguments;
 			}
 
-			return Move(col_from, row_from, col_to, row_to);
+			char promotion = '\0';
+
+			if (message.size() == 12)
+			{
+				if (message[10] != '=') throw err_invalid_arguments;
+				promotion = message[11];
+			}
+
+			return Move(col_from, row_from, col_to, row_to, promotion);
 		}
 
 		struct MoveAndRoomName
@@ -74,11 +105,12 @@ namespace ws_messages
 			chess::Square from;
 			chess::Square to;
 			std::string room_name;
+			char promotion;
 
 			MoveAndRoomName(uint8_t x_from, uint8_t y_from, uint8_t x_to, uint8_t y_to,
-				std::string&& room_name)
+				std::string&& room_name, char promotion = '\0')
 				: from(x_from, y_from), to(x_to, y_to),
-					room_name(std::move(room_name)) {}
+					room_name(std::move(room_name)), promotion(promotion) {}
 		};
 
 		MoveAndRoomName decode_mesage_with_room_name(const std::string& message)
@@ -103,10 +135,21 @@ namespace ws_messages
 				throw err_invalid_arguments;
 			}
 
-			std::string room_name = message.substr(11);
+			char promotion = '\0';
+			std::string room_name;
+
+			if (message.size() >= 14 && message[10] == '=')
+			{
+				promotion = message[11];
+				room_name = message.substr(13);
+			}
+			else
+			{
+				room_name = message.substr(11);
+			}
 
 			return MoveAndRoomName(col_from, row_from, col_to, row_to,
-				std::move(room_name));
+				std::move(room_name), promotion);
 		}
 	};
 
