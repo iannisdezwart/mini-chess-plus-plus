@@ -79,7 +79,7 @@ namespace keypress
 		}
 
 		int first = getch();
-		if (first != 27) return first;
+		if (first != '\e') return first;
 
 		// Escape sequence
 

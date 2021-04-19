@@ -12,7 +12,7 @@
 
 namespace ws_server = websocket_server;
 
-class Game
+class ServerGame
 {
 	private:
 		chess::Board board;
@@ -21,7 +21,7 @@ class Game
 		ws_server::Conn *white = NULL;
 		ws_server::Conn *black = NULL;
 
-		Game()
+		ServerGame()
 		{
 			board.initialise_standard();
 		}
@@ -68,7 +68,7 @@ class Game
 int main()
 {
 	ws_server::WebsocketServer server(THREAD_COUNT);
-	std::unordered_map<std::string, Game> games;
+	std::unordered_map<std::string, ServerGame> games;
 
 	server.conn_event.set_listener([&games](ws_server::Conn& conn)
 	{
@@ -84,8 +84,8 @@ int main()
 					return;
 				}
 
-				games[room_name] = Game();
-				Game& game = games[room_name];
+				games[room_name] = ServerGame();
+				ServerGame& game = games[room_name];
 				game.white = &conn;
 				conn.write(ws_messages::general::ok_message);
 				return;
@@ -101,7 +101,7 @@ int main()
 					return;
 				}
 
-				Game& game = games[room_name];
+				ServerGame& game = games[room_name];
 
 				if (game.black != NULL)
 				{
@@ -127,7 +127,7 @@ int main()
 						return;
 					}
 
-					Game& game = games[move.room_name];
+					ServerGame& game = games[move.room_name];
 					game.handle_move(conn, move.from, move.to, move.promotion);
 					return;
 				}
@@ -156,7 +156,7 @@ int main()
 						return;
 					}
 
-					const Game& game = games[room_name];
+					const ServerGame& game = games[room_name];
 					std::string board_str = game.to_str();
 
 					conn.write(ws_messages::fetch_board_state

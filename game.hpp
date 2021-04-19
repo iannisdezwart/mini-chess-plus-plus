@@ -9,7 +9,7 @@
 
 namespace chess
 {
-	class Game
+	class ClientGame
 	{
 		private:
 			bool started;
@@ -29,7 +29,7 @@ namespace chess
 			WebsocketClient& ws_client;
 			std::string room_name;
 
-			Game(enum Players player, WebsocketClient& ws_client,
+			ClientGame(enum Players player, WebsocketClient& ws_client,
 				std::string&& room_name)
 					: started(false), ended(false), player(player), ws_client(ws_client),
 						room_name(std::move(room_name)), cursor(3, 3), sel(-1, -1),
@@ -37,7 +37,7 @@ namespace chess
 						upsd(player == Players::BLACK)
 			{
 				keypress::start_getch_mode();
-				keypress_thread = std::thread(std::bind(&Game::keypress_handler, this));
+				keypress_thread = std::thread(std::bind(&ClientGame::keypress_handler, this));
 				board.initialise_blank();
 				print(true);
 			}

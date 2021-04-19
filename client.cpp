@@ -14,7 +14,7 @@
 
 void show_main_menu(WebsocketClient& ws_client);
 
-void fetch_board_state(chess::Game *game, const std::function<void()>& callback)
+void fetch_board_state(chess::ClientGame *game, const std::function<void()>& callback)
 {
 	std::function<void()> saved_callback = callback;
 	game->ws_client.write(ws_messages::fetch_board_state::create_client_message(game->room_name));
@@ -43,7 +43,7 @@ void fetch_board_state(chess::Game *game, const std::function<void()>& callback)
 	});
 }
 
-void on_message_receive(chess::Game *game, std::string& message)
+void on_message_receive(chess::ClientGame *game, std::string& message)
 {
 	if (util::starts_with(message, "move "))
 	{
@@ -87,7 +87,7 @@ void on_message_receive(chess::Game *game, std::string& message)
 void start_game(WebsocketClient& ws_client, std::string&& room_name,
 	enum chess::Players player)
 {
-	chess::Game *game = new chess::Game(player, ws_client, std::move(room_name));
+	chess::ClientGame *game = new chess::ClientGame(player, ws_client, std::move(room_name));
 
 	fetch_board_state(game, [game]()
 	{
