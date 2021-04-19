@@ -89,16 +89,17 @@ namespace websocket_server
 				boost::ignore_unused(bytes_transferred);
 				is_reading = false;
 
-				if (err == websocket::error::closed)
+				if (err == websocket::error::closed || err == net::error::eof)
 				{
+					debug("conn closed");
 					close_event.trigger();
 					return;
 				}
 
 				if (err)
 				{
-					fprintf(stderr, "error on read: %s\n",
-						err.message().c_str());
+					fprintf(stderr, "error on read: %s (%d)\n",
+						err.message().c_str(), err.value());
 				}
 
 				std::string message(beast::buffers_to_string(read_buf.data()));
