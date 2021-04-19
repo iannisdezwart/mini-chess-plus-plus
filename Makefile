@@ -4,10 +4,10 @@ all: server client
 
 debug: server-debug client-debug
 
-client: client.cpp
+client: clean-client client.cpp
 	$(CXX) client.cpp -o client -pthread
 
-server: server.cpp
+server: clean-server server.cpp
 	$(CXX) server.cpp -o server -pthread
 
 client-debug: client.cpp
