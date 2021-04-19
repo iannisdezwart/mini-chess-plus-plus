@@ -10,10 +10,10 @@ client: clean-client client.cpp
 server: clean-server server.cpp
 	$(CXX) server.cpp -o server -pthread
 
-client-debug: client.cpp
+client-debug: clean-client client.cpp
 	$(CXX) client.cpp -o client -pthread -g
 
-server-debug: server.cpp
+server-debug: clean-server server.cpp
 	$(CXX) server.cpp -o server -pthread -g
 
 clean-client:
