@@ -252,10 +252,15 @@ namespace chess
 
 			void load_from_str(const std::string& str)
 			{
+				char turn_char = str[0];
+
+				if (turn_char == 'W') board.turn = Players::WHITE;
+				else board.turn = Players::BLACK;
+
 				uint8_t x = 0;
 				uint8_t y = 0;
 
-				for (size_t i = 0; i < str.size(); i++)
+				for (size_t i = 1; i < str.size(); i++)
 				{
 					enum Pieces piece = char_to_piece(str[i]);
 					board.squares[y][x] = piece;

@@ -1752,6 +1752,9 @@ namespace chess
 			{
 				std::string str;
 
+				if (turn == Players::WHITE) str += 'W';
+				else str += 'B';
+
 				for (size_t y = 0; y < 8; y++)
 				{
 					for (size_t x = 0; x < 8; x++)

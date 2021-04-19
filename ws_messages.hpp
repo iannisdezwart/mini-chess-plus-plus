@@ -150,7 +150,7 @@ namespace ws_messages
 
 		std::string decode_server_message(const std::string& message)
 		{
-			if (message.size() != 67)
+			if (message.size() != 68)
 			{
 				debug("size of message = %lu, message = %s", message.size(), message.c_str());
 				throw err_invalid_arguments;
