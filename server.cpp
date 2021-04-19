@@ -16,14 +16,82 @@ class ServerGame
 {
 	private:
 		chess::Board board;
-
-	public:
 		ws_server::Conn *white = NULL;
 		ws_server::Conn *black = NULL;
+
+		void on_white_disconnect()
+		{
+			if (!black_connected())
+			{
+				end();
+				return;
+			}
+
+			white = NULL;
+			black->write(ws_messages::disconnect::opponent_disconnected);
+			end();
+		}
+
+		void on_black_disconnect()
+		{
+			if (!white_connected())
+			{
+				end();
+				return;
+			}
+
+			black = NULL;
+			white->write(ws_messages::disconnect::opponent_disconnected);
+			end();
+		}
+
+		void end()
+		{
+			end_event.trigger();
+		}
+
+	public:
+		events::EventEmitter<> end_event;
 
 		ServerGame()
 		{
 			board.initialise_standard();
+		}
+
+		bool white_connected()
+		{
+			return white != NULL;
+		}
+
+		bool black_connected()
+		{
+			return black != NULL;
+		}
+
+		void connect_white(ws_server::Conn *conn)
+		{
+			white = conn;
+
+			if (black_connected())
+			{
+				black->write(ws_messages::connect::opponent_connected);
+			}
+
+			conn->close_event.set_listener(std::bind(
+				&ServerGame::on_white_disconnect, this));
+		}
+
+		void connect_black(ws_server::Conn *conn)
+		{
+			black = conn;
+
+			if (white_connected())
+			{
+				white->write(ws_messages::connect::opponent_connected);
+			}
+
+			conn->close_event.set_listener(std::bind(
+				&ServerGame::on_black_disconnect, this));
 		}
 
 		void handle_move(ws_server::Conn& conn,
@@ -57,6 +125,11 @@ class ServerGame
 
 			if (white != NULL) white->write(message);
 			if (black != NULL) black->write(message);
+
+			if (board.ended())
+			{
+				end();
+			}
 		}
 
 		std::string to_str() const
@@ -85,9 +158,18 @@ int main()
 				}
 
 				games[room_name] = ServerGame();
+				debug("created game %s", room_name.c_str());
+
 				ServerGame& game = games[room_name];
-				game.white = &conn;
+				game.connect_white(&conn);
 				conn.write(ws_messages::general::ok_message);
+
+				game.end_event.set_listener([&games, room_name]()
+				{
+					games.erase(room_name);
+					debug("stopped game %s", room_name.c_str());
+				});
+
 				return;
 			}
 
@@ -103,13 +185,13 @@ int main()
 
 				ServerGame& game = games[room_name];
 
-				if (game.black != NULL)
+				if (game.black_connected())
 				{
 					conn.write(ws_messages::join_room::err_room_is_full);
 					return;
 				}
 
-				game.black = &conn;
+				game.connect_black(&conn);
 				conn.write(ws_messages::general::ok_message);
 				return;
 			}
