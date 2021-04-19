@@ -42,6 +42,36 @@ void fetch_board_state(chess::Game *game, const std::function<void()>& callback)
 	});
 }
 
+void on_message_receive(chess::Game *game, std::string& message)
+{
+	if (util::starts_with(message, "move "))
+	{
+		try
+		{
+			ws_messages::move::Move move =
+				ws_messages::move::decode_message(message);
+
+			game->move(move.from, move.to);
+		}
+		catch (...)
+		{
+			debug("invalid server move message");
+		}
+
+		goto read_next;
+	}
+
+	if (util::starts_with(message, "chat "))
+	{
+		// Todo: implement
+	}
+
+	read_next:
+
+	game->ws_client.read(std::bind(&on_message_receive,
+		game, std::placeholders::_1));
+}
+
 void start_game(WebsocketClient& ws_client, std::string&& room_name,
 	enum chess::Players player)
 {
@@ -50,34 +80,9 @@ void start_game(WebsocketClient& ws_client, std::string&& room_name,
 	fetch_board_state(game, [game]()
 	{
 		game->start();
-
-		while (true)
-		{
-			game->ws_client.read([game](std::string& message)
-			{
-				if (util::starts_with(message, "move "))
-				{
-					try
-					{
-						ws_messages::move::Move move =
-							ws_messages::move::decode_message(message);
-
-						game->move(move.from, move.to);
-					}
-					catch (...)
-					{
-						debug("invalid server move message");
-					}
-
-					return;
-				}
-
-				if (util::starts_with(message, "chat "))
-				{
-					// Todo: implement
-				}
-			});
-		}
+		game->print(true);
+		game->ws_client.read(std::bind(&on_message_receive,
+			game, std::placeholders::_1));
 	});
 }
 
