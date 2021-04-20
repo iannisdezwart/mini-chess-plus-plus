@@ -19,6 +19,8 @@ using tcp = boost::asio::ip::tcp;
 
 namespace ws
 {
+	size_t latest_server_conn_id = 0;
+
 	class ServerConn : public std::enable_shared_from_this<ServerConn>
 	{
 		private:
@@ -27,12 +29,14 @@ namespace ws
 			bool is_reading = false;
 
 		public:
+			const size_t id;
 			std::string nickname = "";
 
 			events::EventEmitter<std::string&> message_event;
 			events::EventEmitter<> close_event;
 
-			explicit ServerConn(tcp::socket&& socket) : ws(std::move(socket)) {}
+			explicit ServerConn(tcp::socket&& socket)
+				: ws(std::move(socket)), id(latest_server_conn_id++) {}
 
 			void run()
 			{
@@ -93,7 +97,7 @@ namespace ws
 
 				if (!ws.is_open())
 				{
-					debug("conn closed");
+					debug("conn closed (%lu)", id);
 					close_event.trigger();
 					return;
 				}
@@ -105,7 +109,7 @@ namespace ws
 				}
 
 				std::string message(beast::buffers_to_string(read_buf.data()));
-				debug("< %s", message.c_str());
+				debug("< (%lu) %s", id, message.c_str());
 				message_event.trigger(message);
 
 				read_buf.consume(read_buf.size());
@@ -113,7 +117,7 @@ namespace ws
 
 			void write(const std::string& message)
 			{
-				debug("> %s", message.c_str());
+				debug("> (%lu) %s", id, message.c_str());
 
 				ws.text(true);
 
@@ -226,7 +230,7 @@ namespace ws
 						std::make_shared<ServerConn>(std::move(socket));
 					conn->run();
 					conn_event.trigger(*conn);
-					debug("new conn");
+					debug("new conn (%lu)", conn->id);
 				}
 
 				do_accept();

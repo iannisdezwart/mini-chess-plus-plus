@@ -60,6 +60,10 @@ int main()
 
 					game.end_event.set_listener([&games, room_name]()
 					{
+						// Todo: For some reason the capture of room_name seems to be
+						// haunted. Weird segfaults and empty debug messages occur.
+						// Fix this.
+
 						debug("stopped game %s", room_name.c_str());
 						games.erase(room_name);
 					});

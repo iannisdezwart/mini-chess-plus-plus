@@ -59,10 +59,14 @@ namespace chess
 
 			void print(bool new_move)
 			{
+				compute_score();
+
 				printf("\e[2J\e[H"); // Clears screen
 
 				printf("Room: %s\n\n", room_name.c_str());
-				printf(NAME_COLOUR "%s" ANSI_RESET "\n\n", opponent_nickname.c_str());
+				printf(NAME_COLOUR "%s " ANSI_RESET, opponent_nickname.c_str());
+				print_opponent_score();
+				printf("\n\n");
 
 				if (new_move)
 				{
@@ -88,7 +92,9 @@ namespace chess
 					board.print(cursor, sel, prev_move_from, prev_move_to, moves, warn);
 				}
 
-				printf("\n" NAME_COLOUR "%s" ANSI_RESET "\n", client_nickname.c_str());
+				printf("\n" NAME_COLOUR "%s " ANSI_RESET, client_nickname.c_str());
+				print_player_score();
+				printf("\n");
 
 				if (new_move)
 				{
@@ -120,6 +126,23 @@ namespace chess
 						}
 					}
 				}
+			}
+
+			void compute_score()
+			{
+				board.compute_score();
+			}
+
+			void print_player_score()
+			{
+				if (player == Players::WHITE) board.print_white_score();
+				else board.print_black_score();
+			}
+
+			void print_opponent_score()
+			{
+				if (player == Players::WHITE) board.print_black_score();
+				else board.print_white_score();
 			}
 
 			void end()

@@ -2,6 +2,7 @@
 #define BOARD_HEADER
 
 #include <bits/stdc++.h>
+#include "../Util/util.hpp"
 
 #define BLACK_SQUARE "\e[48;2;100;100;100m"
 #define WHITE_SQUARE "\e[48;2;140;140;140m"
@@ -218,6 +219,12 @@ namespace chess
 
 			Square white_king;
 			Square black_king;
+
+			int8_t white_score;
+			int8_t black_score;
+
+			std::string white_score_pieces;
+			std::string black_score_pieces;
 
 			Board() : turn(Players::WHITE), white_king(-1, -1), black_king(-1, -1) {}
 
@@ -455,6 +462,134 @@ namespace chess
 				}
 
 				printf("\n");
+			}
+
+			void compute_score()
+			{
+				int8_t white_pawns = 0;
+				int8_t white_bishops = 0;
+				int8_t white_knights = 0;
+				int8_t white_rooks = 0;
+				int8_t white_queens = 0;
+
+				int8_t black_pawns = 0;
+				int8_t black_bishops = 0;
+				int8_t black_knights = 0;
+				int8_t black_rooks = 0;
+				int8_t black_queens = 0;
+
+				for (uint8_t y = 0; y < 8; y++)
+				{
+					for (uint8_t x = 0; x < 8; x++)
+					{
+						switch (squares[y][x])
+						{
+							case Pieces::WHITE_PAWN:
+								white_pawns++;
+								break;
+
+							case Pieces::WHITE_BISHOP:
+								white_bishops++;
+								break;
+
+							case Pieces::WHITE_KNIGHT:
+								white_knights++;
+								break;
+
+							case Pieces::WHITE_ROOK:
+								white_rooks++;
+								break;
+
+							case Pieces::WHITE_QUEEN:
+								white_queens++;
+								break;
+
+							case Pieces::BLACK_PAWN:
+								black_pawns++;
+								break;
+
+							case Pieces::BLACK_BISHOP:
+								black_bishops++;
+								break;
+
+							case Pieces::BLACK_KNIGHT:
+								black_knights++;
+								break;
+
+							case Pieces::BLACK_ROOK:
+								black_rooks++;
+								break;
+
+							case Pieces::BLACK_QUEEN:
+								black_queens++;
+								break;
+						}
+					}
+				}
+
+				int8_t white_pawns_eaten = 8 - white_pawns;
+				int8_t white_bishops_eaten = 2 - white_bishops;
+				int8_t white_knights_eaten = 2 - white_knights;
+				int8_t white_rooks_eaten = 2 - white_rooks;
+				int8_t white_queens_eaten = 1 - white_queens;
+
+				int8_t black_pawns_eaten = 8 - black_pawns;
+				int8_t black_bishops_eaten = 2 - black_bishops;
+				int8_t black_knights_eaten = 2 - black_knights;
+				int8_t black_rooks_eaten = 2 - black_rooks;
+				int8_t black_queens_eaten = 1 - black_queens;
+
+				white_score = black_pawns_eaten + black_bishops_eaten * 3
+					+ black_knights_eaten * 3 + black_rooks_eaten * 5
+					+ black_queens_eaten * 9;
+
+				white_score_pieces = util::repeat(PAWN, black_pawns_eaten)
+					+ (black_pawns_eaten > 0 ? " " : "")
+					+ util::repeat(BISHOP, black_bishops_eaten)
+					+ (black_bishops_eaten > 0 ? " " : "")
+					+ util::repeat(KNIGHT, black_knights_eaten)
+					+ (black_knights_eaten > 0 ? " " : "")
+					+ util::repeat(ROOK, black_rooks_eaten)
+					+ (black_rooks_eaten > 0 ? " " : "")
+					+ util::repeat(QUEEN, black_queens_eaten)
+					+ (black_queens_eaten > 0 ? " " : "");
+
+				black_score = white_pawns_eaten + white_bishops_eaten * 3
+					+ white_knights_eaten * 3 + white_rooks_eaten * 5
+					+ white_queens_eaten * 9;
+
+				black_score_pieces = util::repeat(PAWN, white_pawns_eaten)
+					+ (white_pawns_eaten > 0 ? " " : "")
+					+ util::repeat(BISHOP, white_bishops_eaten)
+					+ (white_bishops_eaten > 0 ? " " : "")
+					+ util::repeat(KNIGHT, white_knights_eaten)
+					+ (white_knights_eaten > 0 ? " " : "")
+					+ util::repeat(ROOK, white_rooks_eaten)
+					+ (white_rooks_eaten > 0 ? " " : "")
+					+ util::repeat(QUEEN, white_queens_eaten)
+					+ (white_queens_eaten ? " " : "");
+			}
+
+			void print_white_score()
+			{
+				printf(BLACK_PIECE "%s", white_score_pieces.c_str());
+				printf(ANSI_RESET);
+
+				if (white_score > black_score)
+				{
+					printf("(+ %hhd)", white_score - black_score);
+				}
+			}
+
+			void print_black_score()
+			{
+				printf(WHITE_PIECE "%s", black_score_pieces.c_str());
+				printf(ANSI_RESET);
+
+				if (black_score > white_score)
+				{
+					printf("(+ %hhd)", black_score - white_score);
+				}
 			}
 
 			bool white_in_check()
