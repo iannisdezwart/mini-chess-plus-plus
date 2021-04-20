@@ -1,4 +1,3 @@
 + add time
-+ add score
 + premoves
-+ add a get-board-state ws message
++ fix memory leak when promoting pawn
