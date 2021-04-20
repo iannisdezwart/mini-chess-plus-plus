@@ -2,8 +2,8 @@
 #define WS_MESSAGES_HEADER
 
 #include <bits/stdc++.h>
-#include "board.hpp"
-#include "util.hpp"
+#include "../Chess/board.hpp"
+#include "../Util/util.hpp"
 
 namespace ws_messages
 {

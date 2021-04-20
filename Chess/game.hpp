@@ -3,9 +3,9 @@
 
 #include <bits/stdc++.h>
 #include "board.hpp"
-#include "keypress.hpp"
-#include "websocket-client.hpp"
-#include "ws_messages.hpp"
+#include "../Util/keypress.hpp"
+#include "../WebSocket/websocket-client.hpp"
+#include "../WebSocket/ws_messages.hpp"
 
 namespace chess
 {

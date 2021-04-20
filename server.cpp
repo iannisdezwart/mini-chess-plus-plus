@@ -2,10 +2,10 @@
 
 #define DEBUG
 
-#include "websocket-server.hpp"
-#include "board.hpp"
-#include "ws_messages.hpp"
-#include "util.hpp"
+#include "WebSocket/websocket-server.hpp"
+#include "Chess/board.hpp"
+#include "WebSocket/ws_messages.hpp"
+#include "Util/util.hpp"
 
 #define PORT 1337
 #define THREAD_COUNT 1 // std::thread::hardware_concurrency()

@@ -8,8 +8,8 @@
 #include <boost/asio/strand.hpp>
 #include <boost/asio/buffers_iterator.hpp>
 #include <cstdlib>
-#include "debug.hpp"
-#include "event-emitter.hpp"
+#include "../Util/debug.hpp"
+#include "../Util/event-emitter.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;

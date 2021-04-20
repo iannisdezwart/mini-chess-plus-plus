@@ -2,12 +2,12 @@
 
 #define DEBUG
 
-#include "board.hpp"
-#include "game.hpp"
-#include "event-emitter.hpp"
-#include "websocket-client.hpp"
-#include "util.hpp"
-#include "ws_messages.hpp"
+#include "Chess/board.hpp"
+#include "Chess/game.hpp"
+#include "Util/event-emitter.hpp"
+#include "WebSocket/websocket-client.hpp"
+#include "Util/util.hpp"
+#include "WebSocket/ws_messages.hpp"
 
 #define HOST "86.91.151.176"
 #define PORT 1337
