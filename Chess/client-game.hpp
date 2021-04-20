@@ -1,5 +1,5 @@
-#ifndef GAME_HEADER
-#define GAME_HEADER
+#ifndef CLIENT_GAME_HEADER
+#define CLIENT_GAME_HEADER
 
 #include <bits/stdc++.h>
 #include "board.hpp"
@@ -26,10 +26,10 @@ namespace chess
 			std::thread keypress_thread;
 
 		public:
-			WebsocketClient& ws_client;
+			ws::WebsocketClient& ws_client;
 			std::string room_name;
 
-			ClientGame(enum Players player, WebsocketClient& ws_client,
+			ClientGame(enum Players player, ws::WebsocketClient& ws_client,
 				std::string&& room_name)
 					: started(false), ended(false), player(player), ws_client(ws_client),
 						room_name(std::move(room_name)), cursor(3, 3), sel(-1, -1),

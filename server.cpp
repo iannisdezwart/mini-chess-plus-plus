@@ -4,146 +4,19 @@
 
 #include "WebSocket/websocket-server.hpp"
 #include "Chess/board.hpp"
+#include "Chess/server-game.hpp"
 #include "WebSocket/ws_messages.hpp"
 #include "Util/util.hpp"
 
 #define PORT 1337
 #define THREAD_COUNT 1 // std::thread::hardware_concurrency()
 
-namespace ws_server = websocket_server;
-
-class ServerGame
-{
-	private:
-		chess::Board board;
-		ws_server::Conn *white = NULL;
-		ws_server::Conn *black = NULL;
-
-		void on_white_disconnect()
-		{
-			if (!black_connected())
-			{
-				end();
-				return;
-			}
-
-			white = NULL;
-			black->write(ws_messages::disconnect::opponent_disconnected);
-			end();
-		}
-
-		void on_black_disconnect()
-		{
-			if (!white_connected())
-			{
-				end();
-				return;
-			}
-
-			black = NULL;
-			white->write(ws_messages::disconnect::opponent_disconnected);
-			end();
-		}
-
-		void end()
-		{
-			end_event.trigger();
-		}
-
-	public:
-		events::EventEmitter<> end_event;
-
-		ServerGame()
-		{
-			board.initialise_standard();
-		}
-
-		bool white_connected()
-		{
-			return white != NULL;
-		}
-
-		bool black_connected()
-		{
-			return black != NULL;
-		}
-
-		void connect_white(ws_server::Conn *conn)
-		{
-			white = conn;
-
-			if (black_connected())
-			{
-				black->write(ws_messages::connect::opponent_connected);
-			}
-
-			conn->close_event.set_listener(std::bind(
-				&ServerGame::on_white_disconnect, this));
-		}
-
-		void connect_black(ws_server::Conn *conn)
-		{
-			black = conn;
-
-			if (white_connected())
-			{
-				white->write(ws_messages::connect::opponent_connected);
-			}
-
-			conn->close_event.set_listener(std::bind(
-				&ServerGame::on_black_disconnect, this));
-		}
-
-		void handle_move(ws_server::Conn& conn,
-			chess::Square from, chess::Square to, char promotion)
-		{
-			// Authenticate
-
-			if (&conn == white && board.turn == chess::Players::BLACK
-				|| &conn == black && board.turn == chess::Players::WHITE)
-			{
-				conn.write(ws_messages::move::err_not_your_turn);
-				return;
-			}
-
-			if (&conn != white && &conn != black)
-			{
-				conn.write(ws_messages::move::err_not_your_board);
-				return;
-			}
-
-			if (!board.is_legal_move(board.turn, from.x, from.y, to.x, to.y))
-			{
-				conn.write(ws_messages::move::err_illegal_move);
-				return;
-			}
-
-			board.move(from, to, promotion);
-
-			std::string message = ws_messages::move::create_message(
-				from, to, promotion);
-
-			if (white != NULL) white->write(message);
-			if (black != NULL) black->write(message);
-
-			if (board.ended())
-			{
-				end();
-			}
-		}
-
-		std::string to_str() const
-		{
-			return board.to_str();
-		}
-};
-
 int main()
 {
-	ws_server::WebsocketServer server(THREAD_COUNT);
-	std::unordered_map<std::string, ServerGame> games;
+	ws::WebsocketServer server(THREAD_COUNT);
+	std::unordered_map<std::string, chess::ServerGame> games;
 
-	server.conn_event.set_listener([&games](ws_server::Conn& conn)
+	server.conn_event.set_listener([&games](ws::ServerConn& conn)
 	{
 		conn.message_event.set_listener([&games, &conn](std::string message)
 		{
@@ -157,10 +30,10 @@ int main()
 					return;
 				}
 
-				games[room_name] = ServerGame();
+				games[room_name] = chess::ServerGame();
 				debug("created game %s", room_name.c_str());
 
-				ServerGame& game = games[room_name];
+				chess::ServerGame& game = games[room_name];
 				game.connect_white(&conn);
 				conn.write(ws_messages::general::ok_message);
 
@@ -183,7 +56,7 @@ int main()
 					return;
 				}
 
-				ServerGame& game = games[room_name];
+				chess::ServerGame& game = games[room_name];
 
 				if (game.black_connected())
 				{
@@ -209,7 +82,7 @@ int main()
 						return;
 					}
 
-					ServerGame& game = games[move.room_name];
+					chess::ServerGame& game = games[move.room_name];
 					game.handle_move(conn, move.from, move.to, move.promotion);
 					return;
 				}
@@ -238,7 +111,7 @@ int main()
 						return;
 					}
 
-					const ServerGame& game = games[room_name];
+					const chess::ServerGame& game = games[room_name];
 					std::string board_str = game.to_str();
 
 					conn.write(ws_messages::fetch_board_state

@@ -3,7 +3,7 @@
 #define DEBUG
 
 #include "Chess/board.hpp"
-#include "Chess/game.hpp"
+#include "Chess/client-game.hpp"
 #include "Util/event-emitter.hpp"
 #include "WebSocket/websocket-client.hpp"
 #include "Util/util.hpp"
@@ -12,7 +12,7 @@
 #define HOST "86.91.151.176"
 #define PORT 1337
 
-void show_main_menu(WebsocketClient& ws_client);
+void show_main_menu(ws::WebsocketClient& ws_client);
 
 void fetch_board_state(chess::ClientGame *game, const std::function<void()>& callback)
 {
@@ -90,7 +90,7 @@ void on_message_receive(chess::ClientGame *game, std::string& message)
 	{
 		// idk if this will work
 
-		WebsocketClient& ws_client = game->ws_client;
+		ws::WebsocketClient& ws_client = game->ws_client;
 		delete game;
 		show_main_menu(ws_client);
 	}
@@ -101,7 +101,7 @@ void on_message_receive(chess::ClientGame *game, std::string& message)
 	}
 }
 
-void start_game(WebsocketClient& ws_client, std::string&& room_name,
+void start_game(ws::WebsocketClient& ws_client, std::string&& room_name,
 	enum chess::Players player)
 {
 	chess::ClientGame *game = new chess::ClientGame(player, ws_client, std::move(room_name));
@@ -115,7 +115,7 @@ void start_game(WebsocketClient& ws_client, std::string&& room_name,
 	});
 }
 
-void create_room(WebsocketClient& ws_client)
+void create_room(ws::WebsocketClient& ws_client)
 {
 	printf("Room name > ");
 	std::string room_name;
@@ -136,7 +136,7 @@ void create_room(WebsocketClient& ws_client)
 	});
 }
 
-void join_room(WebsocketClient& ws_client)
+void join_room(ws::WebsocketClient& ws_client)
 {
 	printf("Room name > ");
 	std::string room_name;
@@ -157,7 +157,7 @@ void join_room(WebsocketClient& ws_client)
 	});
 }
 
-void show_main_menu(WebsocketClient& ws_client)
+void show_main_menu(ws::WebsocketClient& ws_client)
 {
 	printf("1. Create room (play as white)\n");
 	printf("2. Join room (play as black)\n");
@@ -188,7 +188,7 @@ void show_main_menu(WebsocketClient& ws_client)
 
 int main()
 {
-	WebsocketClient ws_client(HOST, PORT, [&ws_client]()
+	ws::WebsocketClient ws_client(HOST, PORT, [&ws_client]()
 	{
 		show_main_menu(ws_client);
 	});

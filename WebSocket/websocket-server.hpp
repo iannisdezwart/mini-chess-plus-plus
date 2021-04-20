@@ -17,9 +17,9 @@ namespace websocket = beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
-namespace websocket_server
+namespace ws
 {
-	class Conn : public std::enable_shared_from_this<Conn>
+	class ServerConn : public std::enable_shared_from_this<ServerConn>
 	{
 		private:
 			websocket::stream<beast::tcp_stream> ws;
@@ -30,12 +30,12 @@ namespace websocket_server
 			events::EventEmitter<std::string&> message_event;
 			events::EventEmitter<> close_event;
 
-			explicit Conn(tcp::socket&& socket) : ws(std::move(socket)) {}
+			explicit ServerConn(tcp::socket&& socket) : ws(std::move(socket)) {}
 
 			void run()
 			{
 				net::dispatch(ws.get_executor(),
-					beast::bind_front_handler(&Conn::on_run, shared_from_this()));
+					beast::bind_front_handler(&ServerConn::on_run, shared_from_this()));
 			}
 
 			void on_run()
@@ -56,7 +56,7 @@ namespace websocket_server
 				// Accept the websocket handshake
 
 				ws.async_accept(beast::bind_front_handler(
-					&Conn::on_accept, shared_from_this()));
+					&ServerConn::on_accept, shared_from_this()));
 			}
 
 			void on_accept(beast::error_code err)
@@ -80,7 +80,7 @@ namespace websocket_server
 					is_reading = true;
 
 					ws.async_read(read_buf, beast::bind_front_handler(
-						&Conn::on_read, shared_from_this()));
+						&ServerConn::on_read, shared_from_this()));
 				}
 			}
 
@@ -121,7 +121,7 @@ namespace websocket_server
 				send_buf.commit(n);
 
 				ws.async_write(send_buf.data(), beast::bind_front_handler(
-					&Conn::on_write, shared_from_this()));
+					&ServerConn::on_write, shared_from_this()));
 			}
 
 			void on_write(beast::error_code err, size_t bytes_transferred)
@@ -141,15 +141,15 @@ namespace websocket_server
 			}
 	};
 
-	class Listener : public std::enable_shared_from_this<Listener>
+	class ServerListener : public std::enable_shared_from_this<ServerListener>
 	{
 		private:
-			events::EventEmitter<Conn&>& conn_event;
+			events::EventEmitter<ServerConn&>& conn_event;
 			net::io_context& io_ctx;
 			tcp::acceptor acceptor;
 
 		public:
-			Listener(events::EventEmitter<Conn&>& conn_event,
+			ServerListener(events::EventEmitter<ServerConn&>& conn_event,
 				net::io_context& io_ctx, tcp::endpoint endpoint)
 					: io_ctx(io_ctx), acceptor(io_ctx), conn_event(conn_event)
 			{
@@ -209,7 +209,7 @@ namespace websocket_server
 			void do_accept()
 			{
 				acceptor.async_accept(net::make_strand(io_ctx),
-					beast::bind_front_handler(&Listener::on_accept, shared_from_this()));
+					beast::bind_front_handler(&ServerListener::on_accept, shared_from_this()));
 			}
 
 			void on_accept(beast::error_code err, tcp::socket socket)
@@ -221,7 +221,7 @@ namespace websocket_server
 				}
 				else
 				{
-					std::shared_ptr<Conn> conn = std::make_shared<Conn>(std::move(socket));
+					std::shared_ptr<ServerConn> conn = std::make_shared<ServerConn>(std::move(socket));
 					conn->run();
 					conn_event.trigger(*conn);
 					debug("new conn");
@@ -237,7 +237,7 @@ namespace websocket_server
 			size_t thread_count;
 
 		public:
-			events::EventEmitter<Conn&> conn_event;
+			events::EventEmitter<ServerConn&> conn_event;
 
 			WebsocketServer(size_t thread_count) : thread_count(thread_count) {}
 
@@ -246,7 +246,7 @@ namespace websocket_server
 				net::ip::address addr = net::ip::make_address("0.0.0.0");
 
 				net::io_context io_ctx(thread_count);
-				std::make_shared<Listener>(conn_event, io_ctx,
+				std::make_shared<ServerListener>(conn_event, io_ctx,
 					tcp::endpoint(addr, port))->run();
 
 				std::vector<std::thread> threads;
