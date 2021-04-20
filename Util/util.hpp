@@ -7,7 +7,7 @@
 
 namespace util
 {
-	bool starts_with(std::string str, std::string search)
+	bool starts_with(const std::string& str, const std::string& search)
 	{
 		if (search.size() > str.size()) return false;
 
@@ -17,6 +17,18 @@ namespace util
 		}
 
 		return true;
+	}
+
+	std::string repeat(const char *str, size_t repeat_count)
+	{
+		std::string out;
+
+		for (size_t i = 0; i < repeat_count; i++)
+		{
+			out += str;
+		}
+
+		return out;
 	}
 };
 
