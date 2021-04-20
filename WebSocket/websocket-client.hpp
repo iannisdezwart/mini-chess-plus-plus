@@ -90,6 +90,7 @@ namespace ws
 				std::string message(beast::buffers_to_string(read_buf.data()));
 				debug("< %s", message.c_str());
 				read_callback(message);
+
 				read_buf.consume(read_buf.size());
 			}
 

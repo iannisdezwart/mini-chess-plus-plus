@@ -7,6 +7,7 @@
 #include "Chess/server-game.hpp"
 #include "WebSocket/ws_messages.hpp"
 #include "Util/util.hpp"
+#include "Util/debug.hpp"
 
 #define PORT 1337
 #define THREAD_COUNT 1 // std::thread::hardware_concurrency()
@@ -20,52 +21,87 @@ int main()
 	{
 		conn.message_event.set_listener([&games, &conn](std::string message)
 		{
-			if (util::starts_with(message, "create-room "))
+			if (util::starts_with(message, "set-nickname "))
 			{
-				std::string room_name = message.substr(12);
-
-				if (games.count(room_name))
+				try
 				{
-					conn.write(ws_messages::create_room::err_room_already_exists);
-					return;
+					conn.nickname = ws_messages::set_nickname
+						::decode_client_message(message);
+
+					conn.write(ws_messages::general::ok_message);
+				}
+				catch (std::string err)
+				{
+					conn.write(err);
 				}
 
-				games[room_name] = chess::ServerGame();
-				debug("created game %s", room_name.c_str());
+				return;
+			}
 
-				chess::ServerGame& game = games[room_name];
-				game.connect_white(&conn);
-				conn.write(ws_messages::general::ok_message);
-
-				game.end_event.set_listener([&games, room_name]()
+			if (util::starts_with(message, "create-room "))
+			{
+				try
 				{
-					games.erase(room_name);
-					debug("stopped game %s", room_name.c_str());
-				});
+					std::string room_name = ws_messages::create_room
+						::decode_client_message(message);
+
+					if (games.count(room_name))
+					{
+						conn.write(ws_messages::create_room::err_room_already_exists);
+						return;
+					}
+
+					games[room_name] = chess::ServerGame();
+					debug("created game %s", room_name.c_str());
+
+					chess::ServerGame& game = games[room_name];
+					game.connect_white(&conn);
+					conn.write(ws_messages::general::ok_message);
+
+					game.end_event.set_listener([&games, room_name]()
+					{
+						debug("stopped game %s", room_name.c_str());
+						games.erase(room_name);
+					});
+				}
+				catch (std::string err)
+				{
+					conn.write(err);
+				}
 
 				return;
 			}
 
 			if (util::starts_with(message, "join-room "))
 			{
-				std::string room_name = message.substr(10);
-
-				if (!games.count(room_name))
+				try
 				{
-					conn.write(ws_messages::join_room::err_room_does_not_exist);
-					return;
+					std::string room_name = ws_messages::join_room
+						::decode_client_message(message);
+
+					if (!games.count(room_name))
+					{
+						conn.write(ws_messages::join_room::err_room_does_not_exist);
+						return;
+					}
+
+					chess::ServerGame& game = games[room_name];
+
+					if (game.black_connected())
+					{
+						conn.write(ws_messages::join_room::err_room_is_full);
+						return;
+					}
+
+					game.connect_black(&conn);
+					conn.write(ws_messages::join_room
+						::create_server_message(game.white_nickname()));
+				}
+				catch (std::string err)
+				{
+					conn.write(err);
 				}
 
-				chess::ServerGame& game = games[room_name];
-
-				if (game.black_connected())
-				{
-					conn.write(ws_messages::join_room::err_room_is_full);
-					return;
-				}
-
-				game.connect_black(&conn);
-				conn.write(ws_messages::general::ok_message);
 				return;
 			}
 

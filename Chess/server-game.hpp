@@ -6,6 +6,8 @@
 #include "../WebSocket/websocket-server.hpp"
 #include "../WebSocket/ws_messages.hpp"
 
+const std::string empty_nickname = "";
+
 namespace chess
 {
 	class ServerGame
@@ -24,7 +26,8 @@ namespace chess
 				}
 
 				white = NULL;
-				black->write(ws_messages::disconnect::opponent_disconnected);
+				black->write(ws_messages::opponent_disconnected
+					::create_server_message());
 				end();
 			}
 
@@ -37,7 +40,8 @@ namespace chess
 				}
 
 				black = NULL;
-				white->write(ws_messages::disconnect::opponent_disconnected);
+				white->write(ws_messages::opponent_disconnected
+					::create_server_message());
 				end();
 			}
 
@@ -64,13 +68,26 @@ namespace chess
 				return black != NULL;
 			}
 
+			const std::string& white_nickname()
+			{
+				if (white == NULL) return empty_nickname;
+				return white->nickname;
+			}
+
+			const std::string& black_nickname()
+			{
+				if (white == NULL) return empty_nickname;
+				return black->nickname;
+			}
+
 			void connect_white(ws::ServerConn *conn)
 			{
 				white = conn;
 
 				if (black_connected())
 				{
-					black->write(ws_messages::connect::opponent_connected);
+					black->write(ws_messages::opponent_connected
+						::create_server_message(white->nickname));
 				}
 
 				conn->close_event.set_listener(std::bind(
@@ -83,7 +100,8 @@ namespace chess
 
 				if (white_connected())
 				{
-					white->write(ws_messages::connect::opponent_connected);
+					white->write(ws_messages::opponent_connected
+						::create_server_message(black->nickname));
 				}
 
 				conn->close_event.set_listener(std::bind(

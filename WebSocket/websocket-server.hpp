@@ -27,6 +27,8 @@ namespace ws
 			bool is_reading = false;
 
 		public:
+			std::string nickname = "";
+
 			events::EventEmitter<std::string&> message_event;
 			events::EventEmitter<> close_event;
 
@@ -89,7 +91,7 @@ namespace ws
 				boost::ignore_unused(bytes_transferred);
 				is_reading = false;
 
-				if (err == websocket::error::closed || err == net::error::eof)
+				if (!ws.is_open())
 				{
 					debug("conn closed");
 					close_event.trigger();
@@ -134,8 +136,6 @@ namespace ws
 						err.message().c_str());
 					return;
 				}
-
-				// read_buf.consume(read_buf.size());
 
 				do_read();
 			}
@@ -209,7 +209,8 @@ namespace ws
 			void do_accept()
 			{
 				acceptor.async_accept(net::make_strand(io_ctx),
-					beast::bind_front_handler(&ServerListener::on_accept, shared_from_this()));
+					beast::bind_front_handler(&ServerListener::on_accept,
+						shared_from_this()));
 			}
 
 			void on_accept(beast::error_code err, tcp::socket socket)
@@ -221,7 +222,8 @@ namespace ws
 				}
 				else
 				{
-					std::shared_ptr<ServerConn> conn = std::make_shared<ServerConn>(std::move(socket));
+					std::shared_ptr<ServerConn> conn =
+						std::make_shared<ServerConn>(std::move(socket));
 					conn->run();
 					conn_event.trigger(*conn);
 					debug("new conn");

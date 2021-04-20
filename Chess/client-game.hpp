@@ -4,8 +4,11 @@
 #include <bits/stdc++.h>
 #include "board.hpp"
 #include "../Util/keypress.hpp"
+#include "../Util/util.hpp"
 #include "../WebSocket/websocket-client.hpp"
 #include "../WebSocket/ws_messages.hpp"
+
+#define NAME_COLOUR "\e[38;2;225;204;92m"
 
 namespace chess
 {
@@ -24,17 +27,19 @@ namespace chess
 			std::vector<Square> warn;
 			bool upsd;
 			std::thread keypress_thread;
+			std::string client_nickname;
+			std::string opponent_nickname;
 
 		public:
 			ws::WebsocketClient& ws_client;
 			std::string room_name;
 
 			ClientGame(enum Players player, ws::WebsocketClient& ws_client,
-				std::string&& room_name)
+				std::string&& room_name, const std::string& client_nickname)
 					: started(false), ended(false), player(player), ws_client(ws_client),
-						room_name(std::move(room_name)), cursor(3, 3), sel(-1, -1),
-						prev_move_from({ -1, -1 }), prev_move_to({ -1, -1 }),
-						upsd(player == Players::BLACK)
+						client_nickname(client_nickname),	room_name(std::move(room_name)),
+						cursor(3, 3), sel(-1, -1), prev_move_from({ -1, -1 }),
+						prev_move_to({ -1, -1 }), upsd(player == Players::BLACK)
 			{
 				keypress::start_getch_mode();
 				keypress_thread = std::thread(std::bind(&ClientGame::keypress_handler, this));
@@ -47,9 +52,17 @@ namespace chess
 				started = true;
 			}
 
+			void set_opponent_nickname(std::string&& nickname)
+			{
+				opponent_nickname = std::move(nickname);
+			}
+
 			void print(bool new_move)
 			{
 				printf("\e[2J\e[H"); // Clears screen
+
+				printf("Room: %s\n\n", room_name.c_str());
+				printf(NAME_COLOUR "%s" ANSI_RESET "\n\n", opponent_nickname.c_str());
 
 				if (new_move)
 				{
@@ -74,6 +87,8 @@ namespace chess
 				{
 					board.print(cursor, sel, prev_move_from, prev_move_to, moves, warn);
 				}
+
+				printf("\n" NAME_COLOUR "%s" ANSI_RESET "\n", client_nickname.c_str());
 
 				if (new_move)
 				{

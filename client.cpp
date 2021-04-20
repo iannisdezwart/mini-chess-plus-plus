@@ -8,18 +8,23 @@
 #include "WebSocket/websocket-client.hpp"
 #include "Util/util.hpp"
 #include "WebSocket/ws_messages.hpp"
+#include "Util/debug.hpp"
 
 #define HOST "86.91.151.176"
 #define PORT 1337
 
+std::string nickname;
+
 void show_main_menu(ws::WebsocketClient& ws_client);
 
-void fetch_board_state(chess::ClientGame *game, const std::function<void()>& callback)
+void fetch_board_state(chess::ClientGame *game,
+	const std::function<void()>& callback)
 {
 	std::function<void()> saved_callback = callback;
-	game->ws_client.write(ws_messages::fetch_board_state::create_client_message(game->room_name));
+	game->ws_client.write(ws_messages::fetch_board_state
+		::create_client_message(game->room_name));
 
-	game->ws_client.read([game, saved_callback](std::string message)
+	game->ws_client.read([game, saved_callback](std::string& message)
 	{
 		game->print(true);
 
@@ -38,7 +43,7 @@ void fetch_board_state(chess::ClientGame *game, const std::function<void()>& cal
 		}
 		catch (std::string err)
 		{
-			printf("error fetching board state: %s\n", err.c_str());
+			debug("invalid server fetch-board-state response");
 		}
 	});
 }
@@ -69,14 +74,24 @@ void on_message_receive(chess::ClientGame *game, std::string& message)
 		goto read_next;
 	}
 
-	if (message == ws_messages::connect::opponent_connected)
+	if (util::starts_with(message, "opponent-connected "))
 	{
-		printf("Opponent connected!\n");
+		try
+		{
+			game->set_opponent_nickname(ws_messages::opponent_connected
+				::decode_server_message(message));
+
+			game->print(false);
+		}
+		catch (std::string err)
+		{
+			debug("invalid server set-opponent-nickname message");
+		}
 
 		goto read_next;
 	}
 
-	if (message == ws_messages::disconnect::opponent_disconnected)
+	if (util::starts_with(message, "opponent-disconnected"))
 	{
 		game->end();
 		printf("Opponent disconnected, you win!\n");
@@ -102,9 +117,12 @@ void on_message_receive(chess::ClientGame *game, std::string& message)
 }
 
 void start_game(ws::WebsocketClient& ws_client, std::string&& room_name,
-	enum chess::Players player)
+	enum chess::Players player, std::string&& opponent_nickname)
 {
-	chess::ClientGame *game = new chess::ClientGame(player, ws_client, std::move(room_name));
+	chess::ClientGame *game = new chess::ClientGame(
+		player, ws_client, std::move(room_name), nickname);
+
+	game->set_opponent_nickname(std::move(opponent_nickname));
 
 	fetch_board_state(game, [game]()
 	{
@@ -121,13 +139,14 @@ void create_room(ws::WebsocketClient& ws_client)
 	std::string room_name;
 	std::cin >> room_name;
 
-	ws_client.write("create-room " + room_name);
+	ws_client.write(ws_messages::create_room::create_client_message(room_name));
 
 	ws_client.read([&ws_client, room_name](std::string& message) mutable
 	{
 		if (message == ws_messages::general::ok_message)
 		{
-			start_game(ws_client, std::move(room_name), chess::Players::WHITE);
+			start_game(ws_client, std::move(room_name),
+				chess::Players::WHITE, "opponent");
 		}
 		else
 		{
@@ -142,13 +161,21 @@ void join_room(ws::WebsocketClient& ws_client)
 	std::string room_name;
 	std::cin >> room_name;
 
-	ws_client.write("join-room " + room_name);
+	ws_client.write(ws_messages::join_room::create_client_message(room_name));
 
 	ws_client.read([&ws_client, room_name](std::string& message) mutable
 	{
-		if (message == ws_messages::general::ok_message)
+		if (util::starts_with(message, "opponent-nickname "))
 		{
-			start_game(ws_client, std::move(room_name), chess::Players::BLACK);
+			try
+			{
+				start_game(ws_client, std::move(room_name), chess::Players::BLACK,
+					ws_messages::join_room::decode_server_message(message));
+			}
+			catch (std::string err)
+			{
+				debug("invalid join-room server response");
+			}
 		}
 		else
 		{
@@ -186,10 +213,40 @@ void show_main_menu(ws::WebsocketClient& ws_client)
 	}
 }
 
+void set_nickname(ws::WebsocketClient& ws_client,
+	std::function<void()> callback)
+{
+	printf("Enter nickname > ");
+	std::getline(std::cin, nickname);
+
+	ws_client.write(ws_messages::set_nickname::create_client_message(nickname));
+
+	ws_client.read([&ws_client, callback](std::string& message)
+	{
+		if (message != ws_messages::general::ok_message)
+		{
+			if (message == ws_messages::set_nickname::err_nickname_is_taken)
+			{
+				printf("That nickname is already taken, try another nickname...\n");
+				set_nickname(ws_client, callback);
+				return;
+			}
+
+			printf("error setting nickname: %s\n", message.c_str());
+			return;
+		}
+
+		callback();
+	});
+}
+
 int main()
 {
 	ws::WebsocketClient ws_client(HOST, PORT, [&ws_client]()
 	{
-		show_main_menu(ws_client);
+		set_nickname(ws_client, [&ws_client]()
+		{
+			show_main_menu(ws_client);
+		});
 	});
 }

@@ -3,6 +3,8 @@
 
 #include <bits/stdc++.h>
 
+#define ANSI_RESET "\e[m"
+
 namespace util
 {
 	bool starts_with(std::string str, std::string search)

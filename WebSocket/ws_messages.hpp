@@ -7,9 +7,20 @@
 
 namespace ws_messages
 {
+	namespace general
+	{
+		std::string err_unknown_command = "err: unknown command";
+		std::string err_invalid_arguments = "err: invalid arguments";
+		std::string ok_message = "ok";
+
+		bool is_err(std::string message)
+		{
+			return util::starts_with(message, "err:");
+		}
+	};
+
 	namespace move
 	{
-		std::string err_invalid_arguments = "err: invalid arguments";
 		std::string err_room_does_not_exist = "err: room does not exist";
 		std::string err_not_your_turn = "err: not your turn";
 		std::string err_not_your_board = "err: not your board";
@@ -72,7 +83,7 @@ namespace ws_messages
 			if (message.size() < 10)
 			{
 				debug("message size = %ld", message.size());
-				throw err_invalid_arguments;
+				throw general::err_invalid_arguments;
 			}
 
 			uint8_t col_from = message[5] - 'A';
@@ -86,14 +97,14 @@ namespace ws_messages
 			if (col_from >= 8 || row_from >= 8 || col_to >= 8
 				|| row_to >= 8 || space != ' ')
 			{
-				throw err_invalid_arguments;
+				throw general::err_invalid_arguments;
 			}
 
 			char promotion = '\0';
 
 			if (message.size() == 12)
 			{
-				if (message[10] != '=') throw err_invalid_arguments;
+				if (message[10] != '=') throw general::err_invalid_arguments;
 				promotion = message[11];
 			}
 
@@ -118,7 +129,7 @@ namespace ws_messages
 			if (message.size() < 12)
 			{
 				debug("message size = %ld", message.size());
-				throw err_invalid_arguments;
+				throw general::err_invalid_arguments;
 			}
 
 			uint8_t col_from = message[5] - 'A';
@@ -132,7 +143,7 @@ namespace ws_messages
 			if (col_from >= 8 || row_from >= 8 || col_to >= 8
 				|| row_to >= 8 || space != ' ')
 			{
-				throw err_invalid_arguments;
+				throw general::err_invalid_arguments;
 			}
 
 			char promotion = '\0';
@@ -156,18 +167,51 @@ namespace ws_messages
 	namespace create_room
 	{
 		std::string err_room_already_exists = "err: room already exists";
+
+		std::string create_client_message(const std::string& room_name)
+		{
+			return "create-room " + room_name;
+		}
+
+		std::string decode_client_message(const std::string& message)
+		{
+			if (message.size() < 13) throw general::err_invalid_arguments;
+			return message.substr(12);
+		}
 	};
 
 	namespace join_room
 	{
 		std::string err_room_does_not_exist = "err: room does not exist";
 		std::string err_room_is_full = "err: room is full";
+
+		std::string create_client_message(const std::string& room_name)
+		{
+			return "join-room " + room_name;
+		}
+
+		std::string decode_client_message(const std::string& message)
+		{
+			if (message.size() < 11) throw general::err_invalid_arguments;
+			return message.substr(10);
+		}
+
+		std::string create_server_message(const std::string& nickname)
+		{
+			std::string message = "opponent-nickname " + nickname;
+			return message;
+		}
+
+		std::string decode_server_message(const std::string& message)
+		{
+			if (message.size() < 19) throw general::err_invalid_arguments;
+			return message.substr(18);
+		}
 	};
 
 	namespace fetch_board_state
 	{
 		std::string err_room_does_not_exist = "err: room does not exist";
-		std::string err_invalid_arguments = "err: invalid arguments";
 
 		std::string create_client_message(const std::string& room_name)
 		{
@@ -185,7 +229,7 @@ namespace ws_messages
 		{
 			if (message.size() < 19)
 			{
-				throw err_invalid_arguments;
+				throw general::err_invalid_arguments;
 			}
 
 			return message.substr(18);
@@ -196,31 +240,51 @@ namespace ws_messages
 			if (message.size() != 68)
 			{
 				debug("size of message = %lu, message = %s", message.size(), message.c_str());
-				throw err_invalid_arguments;
+				throw general::err_invalid_arguments;
 			}
 
 			return message.substr(3);
 		}
 	};
 
-	namespace connect
+	namespace opponent_connected
 	{
-		std::string opponent_connected = "opponent-connected";
-	};
-
-	namespace disconnect
-	{
-		std::string opponent_disconnected = "opponent-disconnected";
-	};
-
-	namespace general
-	{
-		std::string err_unknown_command = "err: unknown command";
-		std::string ok_message = "ok";
-
-		bool is_err(std::string message)
+		std::string create_server_message(const std::string& nickname)
 		{
-			return util::starts_with(message, "err:");
+			std::string message = "opponent-connected " + nickname;
+			return message;
+		}
+
+		std::string decode_server_message(const std::string& message)
+		{
+			if (message.size() < 20) throw general::err_invalid_arguments;
+			return message.substr(19);
+		}
+	};
+
+	namespace opponent_disconnected
+	{
+		std::string create_server_message()
+		{
+			std::string message = "opponent-disconnected";
+			return message;
+		}
+	};
+
+	namespace set_nickname
+	{
+		std::string err_nickname_is_taken = "err: nickname is taken";
+
+		std::string create_client_message(const std::string& nickname)
+		{
+			std::string message = "set-nickname " + nickname;
+			return message;
+		}
+
+		std::string decode_client_message(const std::string& message)
+		{
+			if (message.size() < 14) throw general::err_invalid_arguments;
+			return message.substr(13);
 		}
 	};
 };
